@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 67
 \\\hline
-a11111 & Nome1 (preencher)	
+a74545 & Adriana Guedes
 \\
-a22222 & Nome2 (preencher)	
+a67713 & Manuel Moreno
 \\
-a33333 & Nome3 (preencher)	
+a74678 & José Sousa
 \end{tabular}
 \end{center}
 
@@ -982,7 +982,7 @@ outBlockchain (Bc bc) = i1 (bc)
 outBlockchain (Bcs bc,a) = i2 (bc,a)
 
 baseBlockchain :: (a -> b) -> (c -> d) -> Either (a) (a,c) -> Either (b) (b,d)
-baseBlockchain f g = id -|- (g >< (map (f >< g)))  
+baseBlockchain f g = id -|- f >< g  
 
 recBlockchain :: (a -> b) -> Either (d) (d,a) -> Either (d) (d,a)
 recBlockchain g = baseBlockchain id g
