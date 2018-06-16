@@ -974,29 +974,29 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Problema 1}
 
 \begin{code}
-inBlockchain :: Either (Block bc) (Block bc, Blockchain a) -> Blockchain a
-inBlockchain = either (Bc) (uncurry Bcs)
 
-outBlockchain :: Blockchain a -> Either (Block bc) (Block bc, Blockchain a)
+inBlockchain = either (Bc) (Bcs)
+
 outBlockchain (Bc bc) = i1 (bc)
-outBlockchain (Bcs bc,a) = i2 (bc,a)
+outBlockchain (Bcs (bc,a)) = i2 (bc,a)
 
-baseBlockchain :: (a -> b) -> (c -> d) -> Either (a) (a,c) -> Either (b) (b,d)
 baseBlockchain f g = id -|- f >< g  
 
-recBlockchain :: (a -> b) -> Either (d) (d,a) -> Either (d) (d,a)
 recBlockchain g = baseBlockchain id g
 
-cataBlockchain :: ((Either (a) (a,b)) -> b) -> Blockchain a -> b
-cataBlockchain = g = g . (recBlockchain (cataBlockchain g)) . outBlockchain
+cataBlockchain g = g . (recBlockchain (cataBlockchain g)) . outBlockchain
 
-anaBlockchain :: (a -> Either (b) (b,a)) -> a -> Blockchain b
 anaBlockchain g = inBlockchain . (recBlockchain (anaBlockchain g)) . g
 
-hyloBlockchain ::  ((Either (b) (b,c)) -> c) -> (a -> Either (b) (b,a)) -> a -> c 
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
-allTransactions = undefined
+getTransactions :: Block  -> Transactions
+getTransactions b = snd(snd(b))
+
+
+allTransactions b = cataBlockchain getTransactions b 
+
+
 ledger = undefined
 isValidMagicNr = undefined
 \end{code}
