@@ -1101,20 +1101,40 @@ outlineQTree = undefined
 \subsection*{Problema 3}
 
 \begin{code}
-base = undefined
-loop = undefined
+  
+ 
+base = f . (split a b)
+      where a = split one succ
+            b = split one one
+            f ((a,b),(c,d)) = (a,b,c,d)
+
+
+loop = f . ( split a b ) . h
+      where a = split (mul.p1) (succ.p2.p1)
+            b = split (mul.p2) (succ.p2.p2)
+            h (a,b,c,d) = ((a,b),(c,d))
+            f ((a,b),(c,d)) = (a,b,c,d)
+         
+
+
 \end{code}
 
 \subsection*{Problema 4}
 
 \begin{code}
-inFTree = undefined
-outFTree = undefined
-baseFTree = undefined
-recFTree = undefined
-cataFTree = undefined
-anaFTree = undefined
-hyloFTree = undefined
+inFTree (Left b) = Unit b
+inFTree (Right (a,(e,d))) = Comp a e d  
+
+outFTree (Unit b) = i1 b
+outFTree (Comp a b c) = i2 (a,(b,c))
+
+baseFTree g h k = h -|- (g >< (k >< k))
+
+recFTree g = baseFTree id id g
+
+cataFTree g = g . recFTree(cataFTree g) . outFTree 
+anaFTree g = inFTree . recFTree(anaFTree g) . g
+hyloFTree g h = (cataFTree g) . (anaFTree h)
 
 instance Bifunctor FTree where
     bimap = undefined
