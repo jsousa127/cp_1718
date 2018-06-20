@@ -1146,9 +1146,16 @@ drawPTree = undefined
 \subsection*{Problema 5}
 
 \begin{code}
-singletonbag = undefined
-muB = undefined
+
+singletonbag = B. singl. (split (id) (const 1))
+
+muB = B. concat. (map updateCount). unB . (fmap unB)
+
+updateCount :: ([(a,Int)],Int) -> [(a,Int)]
+updateCount (bag,n) = map (id >< (*n)) bag
+
 dist = undefined
+
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
