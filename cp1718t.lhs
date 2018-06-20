@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 67
+\textbf{Grupo} nr. & 99 (preencher)
 \\\hline
-a74545 & Adriana Guedes
+a11111 & Nome1 (preencher)	
 \\
-a67713 & Manuel Moreno
+a22222 & Nome2 (preencher)	
 \\
-a74678 & José Sousa
+a33333 & Nome3 (preencher)	
 \end{tabular}
 \end{center}
 
@@ -974,7 +974,6 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Problema 1}
 
 \begin{code}
-
 inBlockchain = either (Bc) (Bcs)
 
 outBlockchain (Bc bc) = i1 (bc)
@@ -990,36 +989,112 @@ anaBlockchain g = inBlockchain . (recBlockchain (anaBlockchain g)) . g
 
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
-getTransactions :: Block  -> Transactions
-getTransactions b = snd(snd(b))
+getTransactions :: Either Block (Block, Transactions)  -> Transactions
+getTransactions = either (p2.p2) (conc.((p2.p2) >< id))
+
+allTransactions = cataBlockchain getTransactions 
 
 
-allTransactions b = cataBlockchain getTransactions b 
 
 
-ledger = undefined
-isValidMagicNr = undefined
+{-
+removeRep :: (Entity,Value) -> Ledger -> Ledger
+removeRep x [] = [x]
+removeRep (a,b) ((c,d) : t) = if (a == c) then (a, b + d) : removeRep (a,b) t   
+                                          else (c,d) : removeRep (a,b) t
+-}
+
+
+acc :: Ledger -> Ledger
+acc = map (id >< sum) . col
+
+getLedger :: Either () (Transaction, Ledger) -> Ledger
+getLedger (Left b) = []
+getLedger (Right ((a,(c,d)),t)) = [(a,-c)] ++ [(d,c)] ++ t
+
+ledger = acc . (cataList getLedger) . allTransactions
+
+
+
+
+getValidMagicNr :: Either Block (Block, [MagicNo]) -> [MagicNo]
+getValidMagicNr = either (cons. (id >< nil)) (cons.(p1 >< id))
+
+rep :: [MagicNo] -> Bool
+rep = uncurry (==) . (split id nub)
+
+isValidMagicNr = rep.(cataBlockchain getValidMagicNr)
+
 \end{code}
+
 
 
 \subsection*{Problema 2}
 
 \begin{code}
-inQTree = undefined
-outQTree = undefined
-baseQTree = undefined
-recQTree = undefined
-cataQTree = undefined
-anaQTree = undefined
-hyloQTree = undefined
+
+-- inQTree :: Either (a, (Int, Int)) (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
+inQTree (Left (a,(b,c))) = Cell a b c
+inQTree (Right (b,(c,(d,e)))) = Block b c d e 
+
+-- outQTree :: QTree a -> Either (a, (Int, Int)) (QTree a, (QTree a, (QTree a, QTree a)))
+outQTree (Cell a b c) = i1 (a,(b,c))
+outQTree (Block a b c d) = i2 (a,(b,(c,d)))
+
+-- baseQTree :: (a1 -> b) -> (a2 -> d1) -> Either (a1, d2) (a2, (a2, (a2, a2))) -> Either (b, d2) (d1, (d1, (d1, d1)))
+baseQTree f g  = (f >< id) -|- (g >< (g >< (g >< g)))
+
+-- recQTree :: (a -> d1) -> Either (b, d2) (a, (a, (a, a))) -> Either (b, d2) (d1, (d1, (d1, d1)))
+recQTree f = baseQTree id f
+
+-- cataQTree :: (Either (b, (Int, Int)) (d, (d, (d, d))) -> d) -> QTree b -> d
+cataQTree g = g . (recQTree (cataQTree g)) . outQTree
+
+-- anaQTree :: (a1 -> Either (a2, (Int, Int)) (a1, (a1, (a1, a1)))) -> a1 -> QTree a2
+anaQTree g = inQTree. (recQTree (anaQTree g)) . g
+
+-- hyloQTree :: (Either (b, (Int, Int)) (c, (c, (c, c))) -> c) -> (a -> Either (b, (Int, Int)) (a, (a, (a, a)))) -> a -> c
+
+hyloQTree h g = cataQTree h . anaQTree g
+
 
 instance Functor QTree where
-    fmap = undefined
+    fmap f = cataQTree (inQTree . (baseQTree f id))
 
-rotateQTree = undefined
-scaleQTree = undefined
-invertQTree = undefined
-compressQTree = undefined
+
+
+h = split (p1.p2.p2) (split p1 (split (p2.p2.p2) (p1.p2)))    
+
+rotateQTree = cataQTree( inQTree.((id >< swap) -|- h) )
+
+{-
+rotateQTree = cataQTree rotateQ
+          where rotateQ (Left (a, (b, c))) = Cell a c b 
+                rotateQ (Right (a,(b,(c,d)))) = Block c a d b
+-}
+
+scaleQTree i = cataQTree ( inQTree .((id >< ((*i) >< (*i))) -|- id) ) 
+
+{-
+scaleQTree i (Cell a b c) = Cell a (b * i) (c * i)
+scaleQTree i (Block a b c d) = Block (scaleQTree i a) (scaleQTree i b) (scaleQTree i c) (scaleQTree i d)
+-}
+
+
+
+-- Usamos a fmap porque apenas queremos aplicar uma função nas folhas da árvore (Cell) -> o fmap apenas é aplicado ao a
+invertQTree = fmap inverteCor
+            where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
+
+
+compressQTree n = undefined --outQTree . cataQTree (inQTree . (id -|- compress (depth -n)))
+
+{-
+compress n (Block q1 q2 q3 q4)  | (n > 0) = Block (compress (n-1) q1) (compress (n-1) q2) (compress (n-1) q3) (compress (n-1) q4)
+                                | otherwise = compressFolha
+-}
+
+
 outlineQTree = undefined
 \end{code}
 
