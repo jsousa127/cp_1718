@@ -1087,11 +1087,16 @@ invertQTree = fmap inverteCor
             where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
 
 
-compressQTree n = undefined --outQTree . cataQTree (inQTree . (id -|- compress (depth -n)))
+compressQTree n = undefined --outQTree . cataQTree (inQTree . (id -|- compress (depthqtree -n)))
 
 {-
+compress n (Cell a l c) = 
 compress n (Block q1 q2 q3 q4)  | (n > 0) = Block (compress (n-1) q1) (compress (n-1) q2) (compress (n-1) q3) (compress (n-1) q4)
-                                | otherwise = compressFolha
+                                | otherwise = compressFolha 0 0 (Block q1 q2 q3 q4) 
+
+
+compressFolha l c (Cell a lc cc) = Cell a (lc + l) (cc + c)
+compressFolha l c (Block q1 q2 q3 q4) = compressFolha 
 -}
 
 
@@ -1133,13 +1138,19 @@ baseFTree g h k = h -|- (g >< (k >< k))
 recFTree g = baseFTree id id g
 
 cataFTree g = g . recFTree(cataFTree g) . outFTree 
+
 anaFTree g = inFTree . recFTree(anaFTree g) . g
+
 hyloFTree g h = (cataFTree g) . (anaFTree h)
 
+-- 
 instance Bifunctor FTree where
-    bimap = undefined
+    bimap f g = cataFTree(inFTree . (baseFTree f g id) )
 
-generatePTree = undefined
+-- elevar a raiz com o sucessor para aumentar o tamanho dos quadrados
+generatePTree = anaFTree (((const 1.0) -|- (split (((sqrt(2)/2) ^) . succ) (split id id))) . outNat)
+
+
 drawPTree = undefined
 \end{code}
 
