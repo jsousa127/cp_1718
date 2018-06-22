@@ -1136,21 +1136,28 @@ outlineQTree = undefined
   )(
     f k (d + 1) = (d + k  + 1) * f k d
   )|
-\just\equiv{ Igualdade extensional |><| 2 ; Def-comp}
         |lcbr(
-    f k . zero = one
+    l k 0 = k + 1
   )(
-    f k . succ = mul.(split (f k) (l k))
+    l k (d + 1) = (l k d) + 1
   )|
+
 \just\equiv{ Eq -+ }
-|either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
+\start
+    |either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
+  \more
+    |either (l k . zero) (l k . succ) = either succ (succ . l k)|
 
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
-|f k . either (zero) (succ) = (either (one) (mul)) . (id + (split (f k) (l k)))|
+    |f k . either (zero) (succ) = (either (one) (mul)) . (id + (split (l k) (f k)))|
+  \more
+    |l k . either (zero) (succ) = (either (succ) (succ)) . (id + lk)|
 
-\just\equiv{ inNat = either (zero) (succ)F f = (id + f)}
-|f k . in = (either (const 1) (mul)) . F (split (l k) (f k))|
+\just\equiv{Fokkinga}
+    |split (f k) (l k) =|\cata|split (either one mul) (either succ succ)|
 
+\end{qed}
+\end{eqnarray*}
 
 \begin{code}
   
