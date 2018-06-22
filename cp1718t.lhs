@@ -1049,27 +1049,21 @@ isValidMagicNr = rep.(cataBlockchain getMagicNr)
 
 \begin{code}
 
--- inQTree :: Either (a, (Int, Int)) (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
+
 inQTree (Left (a,(b,c))) = Cell a b c
 inQTree (Right (b,(c,(d,e)))) = Block b c d e 
 
--- outQTree :: QTree a -> Either (a, (Int, Int)) (QTree a, (QTree a, (QTree a, QTree a)))
+
 outQTree (Cell a b c) = i1 (a,(b,c))
 outQTree (Block a b c d) = i2 (a,(b,(c,d)))
 
--- baseQTree :: (a1 -> b) -> (a2 -> d1) -> Either (a1, d2) (a2, (a2, (a2, a2))) -> Either (b, d2) (d1, (d1, (d1, d1)))
 baseQTree f g  = (f >< id) -|- (g >< (g >< (g >< g)))
 
--- recQTree :: (a -> d1) -> Either (b, d2) (a, (a, (a, a))) -> Either (b, d2) (d1, (d1, (d1, d1)))
 recQTree f = baseQTree id f
 
--- cataQTree :: (Either (b, (Int, Int)) (d, (d, (d, d))) -> d) -> QTree b -> d
 cataQTree g = g . (recQTree (cataQTree g)) . outQTree
 
--- anaQTree :: (a1 -> Either (a2, (Int, Int)) (a1, (a1, (a1, a1)))) -> a1 -> QTree a2
 anaQTree g = inQTree. (recQTree (anaQTree g)) . g
-
--- hyloQTree :: (Either (b, (Int, Int)) (c, (c, (c, c))) -> c) -> (a -> Either (b, (Int, Int)) (a, (a, (a, a)))) -> a -> c
 
 hyloQTree h g = cataQTree h . anaQTree g
 
@@ -1100,12 +1094,22 @@ scaleQTree i = cataQTree ( inQTree .((id >< ((*i) >< (*i))) -|- id) )
 
 \subsubsection*{invertQTree}
 
+Inverter as cores de uma QTree significa subtrair a 255 cada componente de cor RGB. Podemos verificar que é apenas nas \emph{Cell} que temos a componente cor, e, assim sendo, é apenas a estas que queremos efetuar alterações.
+Posto isto, recorremos à utilização do fmap, pois este apenas aplica uma função às folhas da àrvore. Este recebe a função auxiliar \textbf{inverteCor} que irá subtrair as primeiras três componentes do \textbf{PixelRGBA8} a 255, permanecendo inalterada a última componente deste.
+
 \begin{code}
 
--- Usamos a fmap porque apenas queremos aplicar uma função nas folhas da árvore (Cell) -> o fmap apenas é aplicado ao a
+
 invertQTree = fmap inverteCor
             where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
+\end{code}
 
+\subsubsection*{compressQTree}
+
+Comprimir uma QTree significa cortar as folhas da árvore para reduzir a sua profundidade. A quadtree comprimida tem profundidade igual à da quadtree original menos a taxa de compressão, ou seja, no caso de ao cortar a árvore num nível que contém \emph{Block}, este terá que ser substituído por uma nova \emph{Cell} que terá que representar as partes que serão removidas da árvore.
+Por exemplo, a nova \emph{Cell} que irá substituir um \emph{Block} tem que representar todas as \emph{QTree} que iriam estar neste \emph{Block}, e para isso, será necessário somar as linhas e colunas de todas as \emph{Cells}. Para obter estas somas referidas, recorremos à sizeQTree que nos retorna um tuplo com o tamanho de uma quadtree, e será o resultado desta que é utilizado para a criação da \emph{Cell} substituta.
+
+\begin{code}
 
 compressQTree n t = pruneAux ((depthQTree t) - (n-1)) t
 
@@ -1135,16 +1139,11 @@ base = f . (split a b)
             f ((a,b),(c,d)) = (a,b,c,d)
 
 
-
---ver esta com as provas 
 loop = f . ( split a b ) . h
       where a = split (mul.p1) (succ.p2.p1)
             b = split (mul.p2) (succ.p2.p2)
             h (a,b,c,d) = ((a,b),(c,d))
             f ((a,b),(c,d)) = (a,b,c,d)
-         
-
-
 \end{code}
 
 \subsection*{Problema 4}
