@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass{article}
 \usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{palatino}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
@@ -1087,7 +1087,7 @@ invertQTree = fmap inverteCor
             where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
 
 
-compressQTree n = undefined --outQTree . cataQTree (inQTree . (id -|- compress (depth -n)))
+compressQTree n = undefined 
 
 {-
 compress n (Block q1 q2 q3 q4)  | (n > 0) = Block (compress (n-1) q1) (compress (n-1) q2) (compress (n-1) q3) (compress (n-1) q4)
@@ -1149,12 +1149,26 @@ drawPTree = undefined
 
 singletonbag = B. singl. (split (id) (const 1))
 
-muB = B. concat. (map updateCount). unB . (fmap unB)
+muB = B. concat. (map muCounts). unB . (fmap unB)
 
-updateCount :: ([(a,Int)],Int) -> [(a,Int)]
-updateCount (bag,n) = map (id >< (*n)) bag
+muCounts :: ([(a,Int)],Int) -> [(a,Int)]
+muCounts = uncurry (flip (map . (id ><) . (*)))
 
-dist = undefined
+
+dist = D . genDist
+
+genDist :: Bag a -> [(a,ProbRep)]
+genDist bag = map (\(a,n) -> (a,fromIntegral n/fromIntegral t)) (unB (bag))
+  where t = count bag
+
+
+calcProb :: (a,Int) -> Int -> (a,ProbRep)
+calcProb (a,n) i = (a,nn/ii)
+  where nn = fromIntegral n
+        ii = fromIntegral i 
+
+count :: Bag b -> Int
+count = sum . (map snd) . unB
 
 \end{code}
 
