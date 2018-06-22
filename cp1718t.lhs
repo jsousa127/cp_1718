@@ -1195,35 +1195,29 @@ muB = B. concat. (map muCounts). unB . (fmap unB)
 
 \end{code}
 
-\subsubsection*{muB}
+\subsubsection*{dist}
 
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |B [(B [(a,Int)],Int)]|
-           \ar[d]_-{|muB|}
-           \ar[r]_-{|fmap unB|}
-&
-    |B [([(a,Int)],Int)]|
-           \ar[r]_-{|unB|}
-&   
-    | [([(a,Int)],Int)] |
-            \ar[d]_-{|map muCounts|}          
-\\
     |B [(a,Int)]|
+           \ar[d]_-{|dist|}
+           \ar[r]_-{|genDist|}
 &
-     |[(a,Int)]|
-           \ar[l]^-{|B|}
-&
-|     [[(a,Int)]]|
-            \ar[l]_-{|concat|}
-}
+    |[(a,ProbRep)]|
+           \ar[dl]_-{|D|}
+\\
+    |D [(a,ProbRep)]| 
+&   
+}   
 \end{eqnarray*}
 
 \begin{code}
 
 
 dist = D . genDist
+
+
 
 \end{code}
 
