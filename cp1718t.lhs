@@ -1179,22 +1179,103 @@ drawPTree = undefined
 
 \subsection*{Problema 5}
 
+\subsubsection*{Singleton Bag}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |a|
+           \ar[d]_-{|singletonbag|}
+           \ar[r]_-{|split (id) (const 1)|}
+&
+    |(a,const 1)|
+           \ar[d]_-{|singl|}
+\\
+     |B [(a,Int)]|
+&
+     |[(a,Int)]|
+           \ar[l]^-{|B|}
+}
+\end{eqnarray*}
+
 \begin{code}
 
-singletonbag = B. singl. (split (id) (const 1))
+singletonbag = B . singl . (split (id) (const 1))
+
+\end{code}
+
+\subsubsection*{muB}
+
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |B [(B [(a,Int)],Int)]|
+           \ar[d]_-{|muB|}
+           \ar[r]_-{|fmap unB|}
+&
+    |B [([(a,Int)],Int)]|
+           \ar[r]_-{|unB|}
+&   
+    | [([(a,Int)],Int)] |
+            \ar[d]_-{|map muCounts|}          
+\\
+    |B [(a,Int)]|
+&
+     |[(a,Int)]|
+           \ar[l]^-{|B|}
+&
+|     [[(a,Int)]]|
+            \ar[l]_-{|concat|}
+}
+\end{eqnarray*}
+
+\begin{code}
 
 muB = B. concat. (map muCounts). unB . (fmap unB)
 
-muCounts :: ([(a,Int)],Int) -> [(a,Int)]
-muCounts = uncurry (flip (map . (id ><) . (*)))
+\end{code}
+
+\subsubsection*{muB}
+
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |B [(B [(a,Int)],Int)]|
+           \ar[d]_-{|muB|}
+           \ar[r]_-{|fmap unB|}
+&
+    |B [([(a,Int)],Int)]|
+           \ar[r]_-{|unB|}
+&   
+    | [([(a,Int)],Int)] |
+            \ar[d]_-{|map muCounts|}          
+\\
+    |B [(a,Int)]|
+&
+     |[(a,Int)]|
+           \ar[l]^-{|B|}
+&
+|     [[(a,Int)]]|
+            \ar[l]_-{|concat|}
+}
+\end{eqnarray*}
+
+\begin{code}
 
 
 dist = D . genDist
 
+\end{code}
+
+\subsubsection{Auxiliares}
+\begin{code}
+
+muCounts :: ([(a,Int)],Int) -> [(a,Int)]
+muCounts (l,n) = map (id >< (n *)) l 
+
+
 genDist :: Bag a -> [(a,ProbRep)]
 genDist bag = map (\(a,n) -> (a,fromIntegral n/fromIntegral t)) (unB (bag))
   where t = count bag
-
 
 calcProb :: (a,Int) -> Int -> (a,ProbRep)
 calcProb (a,n) i = (a,nn/ii)
@@ -1528,6 +1609,8 @@ isBalancedFTree = isJust . cataFTree (either (const (Just 0)) g)
     where
     g (a,(l,r)) = join (liftA2 equal l r)
     equal x y = if x == y then Just (x+1) else Nothing
+
+
 \end{code}
 %endif
 
