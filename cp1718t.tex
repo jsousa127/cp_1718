@@ -295,13 +295,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 67 
 \\\hline
-a11111 & Nome1 (preencher)	
+a74545 & Adriana Guedes	
 \\
-a22222 & Nome2 (preencher)	
+a74678 & José Sousa	
 \\
-a33333 & Nome3 (preencher)	
+a33333 & Manuel Moreno	
 \end{tabular}
 \end{center}
 
@@ -1304,7 +1304,6 @@ outras funções auxiliares que sejam necessárias.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{56}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{inBlockchain}\mathrel{=}\alt{\Conid{Bc}}{\Conid{Bcs}}{}\<[E]%
 \\[\blanklineskip]%
@@ -1321,13 +1320,69 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{anaBlockchain}\;\Varid{g}\mathrel{=}\Varid{inBlockchain}\comp (\Varid{recBlockchain}\;(\Varid{anaBlockchain}\;\Varid{g}))\comp \Varid{g}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{hyloBlockchain}\;\Varid{h}\;\Varid{g}\mathrel{=}\Varid{cataBlockchain}\;\Varid{h}\comp \Varid{anaBlockchain}\;\Varid{g}{}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+\subsubsection*{allTransactions}
+
+Cada bloco contém uma lista de transações. Para o desenvolvimento da função \emph{allTransactions} é necessário retirar de cada um destes a respetiva lista de transações, e por fim, juntar todas estas listas de forma a obtermos o resultado desejado.
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{Blockchain}}
+           \ar[d]_-{\ensuremath{\Varid{allTransactions}}}
+           \ar[r]_-{\ensuremath{\Varid{outBlockchain}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}(\Conid{Block}\times\Conid{Blockchain})}
+           \ar[d]^-{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\times}\cata{(getTransactions)}}
+\\
+     \ensuremath{\Conid{Transactions}}
+&
+     \ensuremath{\Conid{Block}\mathbin{+}(\Conid{Block}\times\Conid{Transactions})}
+           \ar[l]^-{\ensuremath{\Varid{getTransactions}}}
+}
+\end{eqnarray*}
+
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{56}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{getTransactions}\mathbin{::}\Conid{Block}+(\Conid{Block},\Conid{Transactions}){}\<[56]%
 \>[56]{}\to \Conid{Transactions}{}\<[E]%
 \\
 \>[B]{}\Varid{getTransactions}\mathrel{=}\alt{\p2\comp \p2}{\mathsf{conc}\comp ((\p2\comp \p2)\times\Varid{id})}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{allTransactions}\mathrel{=}\Varid{cataBlockchain}\;\Varid{getTransactions}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} recebida,que recebe uma função - \emph{getTransactions} - que tratará de concatenar as listas de transações de todos os Blocos da \emph{Blockchain}. No caso da \emph{Blockchain} ser um Bloco retormanos a sua lista de transações, que corresponde ao segundo operando do tuplo que o Bloco contém. Caso esta seja o tuplo \emph{(Block, Blockchain)} a lista de transações do Bloco será concatenada com o resultado da recursividade aplicado à \emph{Blockchain}. 
+
+
+\subsubsection*{ledger}
+
+Para definir a função ledger foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
+Este catamorfismo recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emoh{collect} se encontram numa lista, situada no segundo operando do tuplo correspondente à sua entidade.
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{Blockchain}}
+           \ar[d]_-{\ensuremath{\Varid{ledger}}}
+           \ar[r]_-{\ensuremath{\Varid{allTransactions}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}(\Conid{Block}\times\Conid{Blockchain})}
+           \ar[d]^-{\cata{(getLedger)}}
+\\
+     \ensuremath{\Conid{Ledger}}
+&
+     \ensuremath{\Conid{Ledger}}
+           \ar[l]^-{\ensuremath{\Varid{acc}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{ledger}\mathrel{=}\Varid{acc}\comp (\Varid{cataList}\;\Varid{getLedger})\comp \Varid{allTransactions}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{acc}\mathbin{::}\Conid{Ledger}\to \Conid{Ledger}{}\<[E]%
 \\
@@ -1338,32 +1393,67 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{getLedger}\;(i_1\;\Varid{b})\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
 \\
 \>[B]{}\Varid{getLedger}\;(i_2\;((\Varid{a},(\Varid{c},\Varid{d})),\Varid{t}))\mathrel{=}[\mskip1.5mu (\Varid{a},\mathbin{-}\Varid{c})\mskip1.5mu]\plus [\mskip1.5mu (\Varid{d},\Varid{c})\mskip1.5mu]\plus \Varid{t}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{ledger}\mathrel{=}\Varid{acc}\comp (\Varid{cataList}\;\Varid{getLedger})\comp \Varid{allTransactions}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{getValidMagicNr}\mathbin{::}\Conid{Block}+(\Conid{Block},[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu])\to [\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]{}\<[E]%
-\\
-\>[B]{}\Varid{getValidMagicNr}\mathrel{=}\alt{\Varid{cons}\comp (\Varid{id}\times\Varid{nil})}{\Varid{cons}\comp (\p1\times\Varid{id})}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{rep}\mathbin{::}[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
-\\
-\>[B]{}\Varid{rep}\mathrel{=}\uncurry{(\equiv )}\comp \conj{\Varid{id}}{\Varid{nub}}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{isValidMagicNr}\mathrel{=}\Varid{rep}\comp (\Varid{cataBlockchain}\;\Varid{getValidMagicNr}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
 
+\subsubsection*{isValidMagicNr}
+
+De forma a verificarmos se todos os MagicNr são válidos, isto é, são únicos, primeiro foi necessário obtermos uma lista com todos os MagicNr dos blocos, a fim de posteriormente vermos se extistem repetidos.
+Assim, numa primeira fase começamos por aplicar um catamorfismo, cujo gene que este recebe, \emph{getMagicNr}, no caso de a Blackchain ser apenas um bloco irá criar uma lista apenas com um MagicNr, e no caso de ser o tuplo (\emph{Block}, \emph{Blockchain}) irá juntar o MagicNr do bloco com a lista de MagicNr resultante da recursividade.
+
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{getMagicNr}\mathbin{::}\Conid{Block}+(\Conid{Block},[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu])\to [\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{getMagicNr}\mathrel{=}\alt{\Varid{singl}\comp (\Varid{id}\comp \p1)}{\Varid{cons}\comp (\p1\times\Varid{id})}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Após obtermos a lista com todos os MagicNr de uma \emph{Blockchain} é necessário verificar se existem repetidos, e caso os haja significa que nem todos os MagicNr são válidos. Para isso aplicamos a função \textbf{nub} à lista de MagicNr, de forma a eliminar os repetidos, e de seguida comparamos a lista original com o resultado da função nub. Caso não sejam iguais significa que existiam repetidos na lista logo os MagicNr não eram válidos.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{rep}\mathbin{::}[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{rep}\mathrel{=}\uncurry{(\equiv )}\comp \conj{\Varid{id}}{\Varid{nub}}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{Blockchain}}
+           \ar[d]_-{\ensuremath{\Varid{isValidMagicNr}}}
+           \ar[r]^-{\cata{(getMagicNr)}}
+&
+    \ensuremath{[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]}
+           \ar[dl]^-{\ensuremath{\Varid{rep}}}
+\\
+     \ensuremath{\Conid{Bool}}
+&
+}
+\end{eqnarray*}
+
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{isValidMagicNr}\mathrel{=}\Varid{rep}\comp (\Varid{cataBlockchain}\;\Varid{getMagicNr}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
 
 \subsection*{Problema 2}
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{16}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{28}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\mbox{\onelinecomment  inQTree :: Either (a, (Int, Int)) (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a}{}\<[E]%
 \\
@@ -1402,13 +1492,42 @@ outras funções auxiliares que sejam necessárias.
 \\
 \>[B]{}\hsindent{5}{}\<[5]%
 \>[5]{}\mathsf{fmap}\;\Varid{f}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp (\Varid{baseQTree}\;\Varid{f}\;\Varid{id})){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection*{rotateQTree}
+Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} como também cada ramo da árvore. Para isso utilizamos um catamorfismo cujo gene que este recebe irá trocar as linhas com as colunas no caso de uma \emph{Cell} e no caso de um \emph{Block} vai trocar a ordem das QTrees, e isto será aplicado recursivamente a toda a QTree.
+
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{h}\mathrel{=}\conj{\p1\comp \p2\comp \p2}{\conj{\p1}{\conj{\p2\comp \p2\comp \p2}{\p1\comp \p2}}}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{rotateQTree}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp ((\Varid{id}\times\Varid{swap})+\Varid{h})){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+\subsubsection*{scaleQTree}
+Para redimensionar uma imagem, tal como o enunciado refere, apenas é necessário em cada \emph{Cell} multiplicar as linhas e colunas pelo fator passado à função. Assim, utilizamos um catamorfismo que, recursivamente, em cada \emph{Cell} da QTree irá multiplicar as suas linhas e colunas pelo fator dado e no caso de um \emph{Block} irá aplicar a identidade.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{scaleQTree}\;\Varid{i}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp ((\Varid{id}\times((\mathbin{*}\Varid{i})\times(\mathbin{*}\Varid{i})))+\Varid{id})){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+\subsubsection*{invertQTree}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{28}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\mbox{\onelinecomment  Usamos a fmap porque apenas queremos aplicar uma função nas folhas da árvore (Cell) -> o fmap apenas é aplicado ao a}{}\<[E]%
 \\
 \>[B]{}\Varid{invertQTree}\mathrel{=}\mathsf{fmap}\;\Varid{inverteCor}{}\<[E]%
@@ -1557,7 +1676,7 @@ outras funções auxiliares que sejam necessárias.
            \ar[r]_-{\ensuremath{\Varid{unB}}}
 &   
     \ensuremath{[\mskip1.5mu ([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
-            \ar[d]_-{\ensuremath{\map \;\Varid{muCounts}}}          
+            \ar[d]-{\ensuremath{\map \;\Varid{muCounts}}}          
 \\
     \ensuremath{\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
 &
