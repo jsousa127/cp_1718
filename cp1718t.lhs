@@ -660,7 +660,7 @@ g 0 = 1
 g (d+1) = underbrace ((d+1)) (s d) * g d
 
 s 0 = 1
-s (d+1) = s n + 1
+s (d+1) = s d + 1
 \end{spec}
 A partir daqui alguém derivou a seguinte implementação:
 \begin{code}
@@ -673,7 +673,7 @@ derive as funções |base k| e |loop| que são usadas como auxiliares acima.
 \begin{propriedade}
 Verificação que |bin n k| coincide com a sua especificação (\ref{eq:bin}):
 \begin{code}
-prop3 n k = (bin n k) == (fac n) % (fac k * (fac ((n-k))))
+prop3 (NonNegative n) (NonNegative k) = k <= n ==> (bin n k) == (fac n) % (fac k * (fac ((n-k))))
 \end{code}
 \end{propriedade}
 
@@ -997,13 +997,6 @@ allTransactions = cataBlockchain getTransactions
 
 
 
-{-
-removeRep :: (Entity,Value) -> Ledger -> Ledger
-removeRep x [] = [x]
-removeRep (a,b) ((c,d) : t) = if (a == c) then (a, b + d) : removeRep (a,b) t   
-                                          else (c,d) : removeRep (a,b) t
--}
-
 
 acc :: Ledger -> Ledger
 acc = map (id >< sum) . col
@@ -1067,19 +1060,7 @@ h = split (p1.p2.p2) (split p1 (split (p2.p2.p2) (p1.p2)))
 
 rotateQTree = cataQTree( inQTree.((id >< swap) -|- h) )
 
-{-
-rotateQTree = cataQTree rotateQ
-          where rotateQ (Left (a, (b, c))) = Cell a c b 
-                rotateQ (Right (a,(b,(c,d)))) = Block c a d b
--}
-
 scaleQTree i = cataQTree ( inQTree .((id >< ((*i) >< (*i))) -|- id) ) 
-
-{-
-scaleQTree i (Cell a b c) = Cell a (b * i) (c * i)
-scaleQTree i (Block a b c d) = Block (scaleQTree i a) (scaleQTree i b) (scaleQTree i c) (scaleQTree i d)
--}
-
 
 
 -- Usamos a fmap porque apenas queremos aplicar uma função nas folhas da árvore (Cell) -> o fmap apenas é aplicado ao a
@@ -1087,15 +1068,21 @@ invertQTree = fmap inverteCor
             where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
 
 
-compressQTree n = undefined 
+compressQTree n t = pruneAux ((depthQTree t) - (n-1)) t
 
-{-
-compress n (Block q1 q2 q3 q4)  | (n > 0) = Block (compress (n-1) q1) (compress (n-1) q2) (compress (n-1) q3) (compress (n-1) q4)
-                                | otherwise = compressFolha
--}
+pruneAux :: Int -> QTree a -> QTree a
+pruneAux n (Cell a x y) = (Cell a x y)
+pruneAux n (Block a b c d) | n <= 1 = Cell (cor a) (p1(sizeQTree(Block a b c d))) (p2(sizeQTree(Block a b c d)))
+                           | otherwise = Block (p a) (p b) (p c) (p d)
+                     where p = pruneAux (n-1)
+
+cor :: QTree a -> a
+cor (Cell a b c) = a
+cor (Block a b c d) = cor a
 
 
 outlineQTree = undefined
+
 \end{code}
 
 \subsection*{Problema 3}
@@ -1109,6 +1096,8 @@ base = f . (split a b)
             f ((a,b),(c,d)) = (a,b,c,d)
 
 
+
+--ver esta com as provas 
 loop = f . ( split a b ) . h
       where a = split (mul.p1) (succ.p2.p1)
             b = split (mul.p2) (succ.p2.p2)
@@ -1122,8 +1111,8 @@ loop = f . ( split a b ) . h
 \subsection*{Problema 4}
 
 \begin{code}
-inFTree (Left b) = Unit b
-inFTree (Right (a,(e,d))) = Comp a e d  
+inFTree = either Unit (uncomp . assocl) 
+  where uncomp = uncurry (uncurry Comp)
 
 outFTree (Unit b) = i1 b
 outFTree (Comp a b c) = i2 (a,(b,c))
@@ -1133,13 +1122,19 @@ baseFTree g h k = h -|- (g >< (k >< k))
 recFTree g = baseFTree id id g
 
 cataFTree g = g . recFTree(cataFTree g) . outFTree 
+
 anaFTree g = inFTree . recFTree(anaFTree g) . g
+
 hyloFTree g h = (cataFTree g) . (anaFTree h)
 
+-- 
 instance Bifunctor FTree where
-    bimap = undefined
+    bimap f g = cataFTree(inFTree . (baseFTree f g id))
 
-generatePTree = undefined
+-- elevar a raiz com o sucessor para aumentar o tamanho dos quadrados
+generatePTree = anaFTree (((const 1.0) -|- (split (((sqrt(2)/2) ^) . succ) (split id id))) . outNat)
+
+
 drawPTree = undefined
 \end{code}
 
@@ -1505,7 +1500,7 @@ invertBMP from to = withBMP from to invertbm
 
 depthQTree :: QTree a -> Int
 depthQTree = cataQTree (either (const 0) f)
-    where f (a,(b,(c,d))) = maximum [a,b,c,d]
+    where f (a,(b,(c,d))) = 1 + maximum [a,b,c,d]
 
 compressbm :: Eq a => Int -> Matrix a -> Matrix a
 compressbm n = qt2bm . compressQTree n . bm2qt
