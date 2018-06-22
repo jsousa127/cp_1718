@@ -1509,20 +1509,104 @@ compress n (Block q1 q2 q3 q4)  \ensuremath{(\Varid{n}\mathbin{>}\mathrm{0})\mat
 
 \subsection*{Problema 5}
 
+\subsubsection*{Singleton Bag}
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Varid{a}}
+           \ar[d]_-{\ensuremath{\Varid{singletonbag}}}
+           \ar[r]_-{\ensuremath{\conj{\Varid{id}}{\underline{\mathrm{1}}}}}
+&
+    \ensuremath{(\Varid{a},\underline{\mathrm{1}})}
+           \ar[d]_-{\ensuremath{\Varid{singl}}}
+\\
+     \ensuremath{\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+&
+     \ensuremath{[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+           \ar[l]^-{\ensuremath{\mathit B}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{singletonbag}\mathrel{=}\mathit B\comp \Varid{singl}\comp \conj{\Varid{id}}{\underline{\mathrm{1}}}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection*{muB}
+
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\mathit B\;[\mskip1.5mu (\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+           \ar[d]_-{\ensuremath{\mu }}
+           \ar[r]_-{\ensuremath{\mathsf{fmap}\;\Varid{unB}}}
+&
+    \ensuremath{\mathit B\;[\mskip1.5mu ([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+           \ar[r]_-{\ensuremath{\Varid{unB}}}
+&   
+    \ensuremath{[\mskip1.5mu ([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+            \ar[d]_-{\ensuremath{\map \;\Varid{muCounts}}}          
+\\
+    \ensuremath{\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+&
+     \ensuremath{[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+           \ar[l]^-{\ensuremath{\mathit B}}
+&
+\ensuremath{[\mskip1.5mu [\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]\mskip1.5mu]}
+            \ar[l]_-{\ensuremath{\Varid{concat}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mu \mathrel{=}\mathit B\comp \Varid{concat}\comp (\map \;\Varid{muCounts})\comp \Varid{unB}\comp (\mathsf{fmap}\;\Varid{unB}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection*{muB}
+
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\mathit B\;[\mskip1.5mu (\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+           \ar[d]_-{\ensuremath{\mu }}
+           \ar[r]_-{\ensuremath{\mathsf{fmap}\;\Varid{unB}}}
+&
+    \ensuremath{\mathit B\;[\mskip1.5mu ([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+           \ar[r]_-{\ensuremath{\Varid{unB}}}
+&   
+    \ensuremath{[\mskip1.5mu ([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\mskip1.5mu]}
+            \ar[d]_-{\ensuremath{\map \;\Varid{muCounts}}}          
+\\
+    \ensuremath{\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+&
+     \ensuremath{[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
+           \ar[l]^-{\ensuremath{\mathit B}}
+&
+\ensuremath{[\mskip1.5mu [\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]\mskip1.5mu]}
+            \ar[l]_-{\ensuremath{\Varid{concat}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{dist}\mathrel{=}\Conid{D}\comp \Varid{genDist}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Auxiliares}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{9}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{singletonbag}\mathrel{=}\mathit B\comp \Varid{singl}\comp \conj{\Varid{id}}{\underline{\mathrm{1}}}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\mu \mathrel{=}\mathit B\comp \Varid{concat}\comp (\map \;\Varid{muCounts})\comp \Varid{unB}\comp (\mathsf{fmap}\;\Varid{unB}){}\<[E]%
-\\[\blanklineskip]%
 \>[B]{}\Varid{muCounts}\mathbin{::}([\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu],\Conid{Int})\to [\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{muCounts}\mathrel{=}\uncurry{(\Varid{flip}\;(\map \comp (\Varid{id}\times)\comp (\mathbin{*})))}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{dist}\mathrel{=}\Conid{D}\comp \Varid{genDist}{}\<[E]%
+\>[B]{}\Varid{muCounts}\;(\Varid{l},\Varid{n})\mathrel{=}\map \;(\Varid{id}\times(\Varid{n}\mathbin{*}))\;\Varid{l}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{genDist}\mathbin{::}\Conid{Bag}\;\Varid{a}\to [\mskip1.5mu (\Varid{a},\Conid{ProbRep})\mskip1.5mu]{}\<[E]%
 \\
