@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 67 
 \\\hline
-a11111 & Nome1 (preencher)	
+a74545 & Adriana Guedes	
 \\
-a22222 & Nome2 (preencher)	
+a74678 & José Sousa	
 \\
-a33333 & Nome3 (preencher)	
+a33333 & Manuel Moreno	
 \end{tabular}
 \end{center}
 
@@ -989,14 +989,30 @@ anaBlockchain g = inBlockchain . (recBlockchain (anaBlockchain g)) . g
 
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
+\end{code}
+\subsubsection*{allTransactions}
+
+Cada bloco contém uma lista de transações. Para o desenvolvimento da função \emph{allTransactions} é necessário retirar de cada um destes a respetiva lista de transações, e por fim, juntar todas estas listas de forma a obtermos o resultado desejado.
+
+\begin{code}
+
 getTransactions :: Either Block (Block, Transactions)  -> Transactions
 getTransactions = either (p2.p2) (conc.((p2.p2) >< id))
 
 allTransactions = cataBlockchain getTransactions 
 
+\end{code}
+Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} recebida,que recebe uma função - \emph{getTransactions} - que tratará de concatenar as listas de transações de todos os Blocos da \emph{Blockchain}. No caso da \emph{Blockchain} ser um Bloco retormanos a sua lista de transações, que corresponde ao segundo operando do tuplo que o Bloco contém. Caso esta seja o tuplo \emph{(Block, Blockchain)} a lista de transações do Bloco será concatenada com o resultado da recursividade aplicado à \emph{Blockchain}. 
 
 
+\subsubsection*{ledger}
 
+Para definir a função ledger foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
+Este catamorfismo recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emoh{collect} se encontram numa lista, situada no segundo operando do tuplo correspondente à sua entidade.
+
+\begin{code}
+
+ledger = acc . (cataList getLedger) . allTransactions
 
 acc :: Ledger -> Ledger
 acc = map (id >< sum) . col
@@ -1005,21 +1021,28 @@ getLedger :: Either () (Transaction, Ledger) -> Ledger
 getLedger (Left b) = []
 getLedger (Right ((a,(c,d)),t)) = [(a,-c)] ++ [(d,c)] ++ t
 
-ledger = acc . (cataList getLedger) . allTransactions
+\end{code}
 
 
+\subsubsection*{isValidMagicNr}
 
+De forma a verificarmos se todos os MagicNr são válidos, isto é, são únicos, primeiro foi necessário obtermos uma lista com todos os MagicNr dos blocos, a fim de posteriormente vermos se extistem repetidos.
+Assim, numa primeira fase começamos por aplicar um catamorfismo, cujo gene que este recebe, \emph{getMagicNr}, no caso de a Blackchain ser apenas um bloco irá criar uma lista apenas com um MagicNr, e no caso de ser o tuplo (\emph{Block}, \emph{Blockchain}) irá juntar o MagicNr do bloco com a lista de MagicNr resultante da recursividade.
 
-getValidMagicNr :: Either Block (Block, [MagicNo]) -> [MagicNo]
-getValidMagicNr = either (cons. (id >< nil)) (cons.(p1 >< id))
+\begin{code}
+getMagicNr :: Either Block (Block, [MagicNo]) -> [MagicNo]
+getMagicNr = either (singl.(id . p1)) (cons.(p1 >< id))
+\end{code}
 
+Após obtermos a lista com todos os MagicNr de uma \emph{Blockchain} é necessário verificar se existem repetidos, e caso os haja significa que nem todos os MagicNr são válidos. Para isso aplicamos a função \textbf{nub} à lista de MagicNr, de forma a eliminar os repetidos, e de seguida comparamos a lista original com o resultado da função nub. Caso não sejam iguais significa que existiam repetidos na lista logo os MagicNr não eram válidos.
+
+\begin{code}
 rep :: [MagicNo] -> Bool
 rep = uncurry (==) . (split id nub)
 
-isValidMagicNr = rep.(cataBlockchain getValidMagicNr)
 
+isValidMagicNr = rep.(cataBlockchain getMagicNr)
 \end{code}
-
 
 
 \subsection*{Problema 2}
@@ -1054,14 +1077,30 @@ hyloQTree h g = cataQTree h . anaQTree g
 instance Functor QTree where
     fmap f = cataQTree (inQTree . (baseQTree f id))
 
+\end{code}
+
+\subsubsection*{rotateQTree}
+Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} como também cada ramo da árvore. Para isso utilizamos um catamorfismo cujo gene que este recebe irá trocar as linhas com as colunas no caso de uma \emph{Cell} e no caso de um \emph{Block} vai trocar a ordem das QTrees, e isto será aplicado recursivamente a toda a QTree.
 
 
+\begin{code}
 h = split (p1.p2.p2) (split p1 (split (p2.p2.p2) (p1.p2)))    
 
 rotateQTree = cataQTree( inQTree.((id >< swap) -|- h) )
+\end{code}
 
+
+\subsubsection*{scaleQTree}
+Para redimensionar uma imagem, tal como o enunciado refere, apenas é necessário em cada \emph{Cell} multiplicar as linhas e colunas pelo fator passado à função. Assim, utilizamos um catamorfismo que, recursivamente, em cada \emph{Cell} da QTree irá multiplicar as suas linhas e colunas pelo fator dado e no caso de um \emph{Block} irá aplicar a identidade.
+
+\begin{code}
 scaleQTree i = cataQTree ( inQTree .((id >< ((*i) >< (*i))) -|- id) ) 
+\end{code}
 
+
+\subsubsection*{invertQTree}
+
+\begin{code}
 
 -- Usamos a fmap porque apenas queremos aplicar uma função nas folhas da árvore (Cell) -> o fmap apenas é aplicado ao a
 invertQTree = fmap inverteCor
