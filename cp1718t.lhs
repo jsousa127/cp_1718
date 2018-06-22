@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass{article}
 \usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{palatino}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
@@ -997,13 +997,6 @@ allTransactions = cataBlockchain getTransactions
 
 
 
-{-
-removeRep :: (Entity,Value) -> Ledger -> Ledger
-removeRep x [] = [x]
-removeRep (a,b) ((c,d) : t) = if (a == c) then (a, b + d) : removeRep (a,b) t   
-                                          else (c,d) : removeRep (a,b) t
--}
-
 
 acc :: Ledger -> Ledger
 acc = map (id >< sum) . col
@@ -1075,13 +1068,17 @@ invertQTree = fmap inverteCor
             where inverteCor (PixelRGBA8 a b c d) = PixelRGBA8 ( 255 - a ) ( 255 - b ) ( 255 - c ) d
 
 
-compressQTree n t = pruneAux ((depthQTree t) - n) t
+compressQTree n t = pruneAux ((depthQTree t) - (n-1)) t
 
-pruneAux :: Num a => Int -> QTree a -> QTree a
-pruneAux n (Cell a x y) = Cell a x y
-pruneAux n (Block a b c d) | (n > 0) = Block (p (n-1) a) (p (n-1) b) (p (n-1) c) (p (n-1) d)
-                           | otherwise = Cell 1 (p1(sizeQTree(Block a b c d))) (p2(sizeQTree(Block a b c d)))
-                           where p = pruneAux
+pruneAux :: Int -> QTree a -> QTree a
+pruneAux n (Cell a x y) = (Cell a x y)
+pruneAux n (Block a b c d) | n <= 1 = Cell (cor a) (p1(sizeQTree(Block a b c d))) (p2(sizeQTree(Block a b c d)))
+                           | otherwise = Block (p a) (p b) (p c) (p d)
+                     where p = pruneAux (n-1)
+
+cor :: QTree a -> a
+cor (Cell a b c) = a
+cor (Block a b c d) = cor a
 
 
 outlineQTree = undefined
@@ -1147,12 +1144,26 @@ drawPTree = undefined
 
 singletonbag = B. singl. (split (id) (const 1))
 
-muB = B. concat. (map updateCount). unB . (fmap unB)
+muB = B. concat. (map muCounts). unB . (fmap unB)
 
-updateCount :: ([(a,Int)],Int) -> [(a,Int)]
-updateCount (bag,n) = map (id >< (*n)) bag
+muCounts :: ([(a,Int)],Int) -> [(a,Int)]
+muCounts = uncurry (flip (map . (id ><) . (*)))
 
-dist = undefined
+
+dist = D . genDist
+
+genDist :: Bag a -> [(a,ProbRep)]
+genDist bag = map (\(a,n) -> (a,fromIntegral n/fromIntegral t)) (unB (bag))
+  where t = count bag
+
+
+calcProb :: (a,Int) -> Int -> (a,ProbRep)
+calcProb (a,n) i = (a,nn/ii)
+  where nn = fromIntegral n
+        ii = fromIntegral i 
+
+count :: Bag b -> Int
+count = sum . (map snd) . unB
 
 \end{code}
 
