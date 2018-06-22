@@ -111,7 +111,7 @@ a74545 & Adriana Guedes
 \\
 a74678 & José Sousa	
 \\
-a33333 & Manuel Moreno	
+a67713 & Manuel Moreno	
 \end{tabular}
 \end{center}
 
@@ -994,23 +994,6 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
 Cada bloco contém uma lista de transações. Para o desenvolvimento da função \emph{allTransactions} é necessário retirar de cada um destes a respetiva lista de transações, e por fim, juntar todas estas listas de forma a obtermos o resultado desejado.
 
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Blockchain|
-           \ar[d]_-{|allTransactions|}
-           \ar[r]_-{|outBlockchain|}
-&
-    |Block + (Block >< Blockchain)|
-           \ar[d]^-{|id+id >< |\cata{(getTransactions)}}
-\\
-     |Transactions|
-&
-     |Block + (Block >< Transactions)|
-           \ar[l]^-{|getTransactions|}
-}
-\end{eqnarray*}
-
-
 \begin{code}
 
 getTransactions :: Either Block (Block, Transactions)  -> Transactions
@@ -1026,22 +1009,6 @@ Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} receb
 
 Para definir a função ledger foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
 Este catamorfismo recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emoh{collect} se encontram numa lista, situada no segundo operando do tuplo correspondente à sua entidade.
-
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Blockchain|
-           \ar[d]_-{|ledger|}
-           \ar[r]_-{|allTransactions|}
-&
-    |Block + (Block >< Blockchain)|
-           \ar[d]^-{\cata{(getLedger)}}
-\\
-     |Ledger|
-&
-     |Ledger|
-           \ar[l]^-{|acc|}
-}
-\end{eqnarray*}
 
 \begin{code}
 
@@ -1062,10 +1029,7 @@ getLedger (Right ((a,(c,d)),t)) = [(a,-c)] ++ [(d,c)] ++ t
 De forma a verificarmos se todos os MagicNr são válidos, isto é, são únicos, primeiro foi necessário obtermos uma lista com todos os MagicNr dos blocos, a fim de posteriormente vermos se extistem repetidos.
 Assim, numa primeira fase começamos por aplicar um catamorfismo, cujo gene que este recebe, \emph{getMagicNr}, no caso de a Blackchain ser apenas um bloco irá criar uma lista apenas com um MagicNr, e no caso de ser o tuplo (\emph{Block}, \emph{Blockchain}) irá juntar o MagicNr do bloco com a lista de MagicNr resultante da recursividade.
 
-
 \begin{code}
-
-
 getMagicNr :: Either Block (Block, [MagicNo]) -> [MagicNo]
 getMagicNr = either (singl.(id . p1)) (cons.(p1 >< id))
 \end{code}
@@ -1077,30 +1041,9 @@ rep :: [MagicNo] -> Bool
 rep = uncurry (==) . (split id nub)
 
 
-
-\end{code}
-
-
-
-
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Blockchain|
-           \ar[d]_-{|isValidMagicNr|}
-           \ar[r]^-{\cata{(getMagicNr)}}
-&
-    |[MagicNo]|
-           \ar[dl]^-{|rep|}
-\\
-     |Bool|
-&
-}
-\end{eqnarray*}
-
-
-\begin{code}
 isValidMagicNr = rep.(cataBlockchain getMagicNr)
 \end{code}
+
 
 \subsection*{Problema 2}
 
@@ -1109,7 +1052,6 @@ isValidMagicNr = rep.(cataBlockchain getMagicNr)
 
 inQTree (Left (a,(b,c))) = Cell a b c
 inQTree (Right (b,(c,(d,e)))) = Block b c d e 
-
 
 outQTree (Cell a b c) = i1 (a,(b,c))
 outQTree (Block a b c d) = i2 (a,(b,(c,d)))
@@ -1187,6 +1129,29 @@ outlineQTree = undefined
 
 \subsection*{Problema 3}
 
+\begin{eqnarray*}
+\start
+        |lcbr(
+    f k 0 = 1
+  )(
+    f k (d + 1) = (d + k  + 1) * f k d
+  )|
+\just\equiv{ Igualdade extensional |><| 2 ; Def-comp}
+        |lcbr(
+    f k . zero = one
+  )(
+    f k . succ = mul.(split (f k) (l k))
+  )|
+\just\equiv{ Eq -+ }
+|either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
+
+\just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
+|f k . either (zero) (succ) = (either (one) (mul)) . (id + (split (f k) (l k)))|
+
+\just\equiv{ inNat = either (zero) (succ)F f = (id + f)}
+|f k . in = (either (const 1) (mul)) . F (split (l k) (f k))|
+
+
 \begin{code}
   
  
@@ -1222,11 +1187,12 @@ anaFTree g = inFTree . recFTree(anaFTree g) . g
 
 hyloFTree g h = (cataFTree g) . (anaFTree h)
 
--- 
+
 instance Bifunctor FTree where
     bimap f g = cataFTree(inFTree . (baseFTree f g id))
 
--- elevar a raiz com o sucessor para aumentar o tamanho dos quadrados
+
+
 generatePTree = anaFTree (((const 1.0) -|- (split (((sqrt(2)/2) ^) . succ) (split id id))) . outNat)
 
 
@@ -1272,7 +1238,7 @@ singletonbag = B . singl . (split (id) (const 1))
            \ar[r]_-{|unB|}
 &   
     | [([(a,Int)],Int)] |
-            \ar[d]-{|map muCounts|}          
+            \ar[d]_-{|map muCounts|}          
 \\
     |B [(a,Int)]|
 &
@@ -1290,29 +1256,35 @@ muB = B. concat. (map muCounts). unB . (fmap unB)
 
 \end{code}
 
-\subsubsection*{dist}
+\subsubsection*{muB}
 
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |B [(a,Int)]|
-           \ar[d]_-{|dist|}
-           \ar[r]_-{|genDist|}
+    |B [(B [(a,Int)],Int)]|
+           \ar[d]_-{|muB|}
+           \ar[r]_-{|fmap unB|}
 &
-    |[(a,ProbRep)]|
-           \ar[dl]_-{|D|}
-\\
-    |D [(a,ProbRep)]| 
+    |B [([(a,Int)],Int)]|
+           \ar[r]_-{|unB|}
 &   
-}   
+    | [([(a,Int)],Int)] |
+            \ar[d]_-{|map muCounts|}          
+\\
+    |B [(a,Int)]|
+&
+     |[(a,Int)]|
+           \ar[l]^-{|B|}
+&
+|     [[(a,Int)]]|
+            \ar[l]_-{|concat|}
+}
 \end{eqnarray*}
 
 \begin{code}
 
 
 dist = D . genDist
-
-
 
 \end{code}
 
