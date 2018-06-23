@@ -1305,7 +1305,7 @@ Assim,
 
 \just\equiv{ for b i = |cata (either (const i) (b))| }
 
-|cata (either (const base) loop) = |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
+|cata (either (const base) loop) = cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
 
 \just\equiv{ Eq-+ }
     const base = split (split one succ) (split one one)

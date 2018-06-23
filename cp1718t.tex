@@ -1553,91 +1553,124 @@ Por exemplo, a nova \emph{Cell} que irá substituir um \emph{Block} tem que repr
 
 \subsection*{Problema 3}
 
-\subsubsection*{Dedução do <fk,lk> }
+\subsubsection*{Dedução de \ensuremath{\conj{\Varid{fk}}{\Varid{lk}}} }
 
 \begin{eqnarray*}
 \start
         \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{f}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\Varid{k}\mathbin{+}\mathrm{1})\mathbin{*}\Varid{f}\;\Varid{k}\;\Varid{d}\end{lcbr}}
+  \more
         \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\;\mathrm{0}\mathrel{=}\Varid{k}\mathbin{+}\mathrm{1}\\\Varid{l}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{l}\;\Varid{k}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
 
   \just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, l k d = (d + k  + 1)}
         \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{f}\;\Varid{k}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\end{lcbr}}
-        \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\succ \\\Varid{l}\;\Varid{k}\comp \succ \mathrel{=}\succ \comp \Varid{l}\;\Varid{k}\end{lcbr}}
+  \more
+        \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\succ \\\Varid{l}\;\Varid{k}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\end{lcbr}}
 
 \just\equiv{ Eq -+ }
     \ensuremath{\alt{\Varid{f}\;\Varid{k}\comp \Varid{zero}}{\Varid{f}\;\Varid{k}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}\comp \conj{\Varid{l}\;\Varid{k}}{\Varid{f}\;\Varid{k}}}}
   \more
-    \ensuremath{\alt{\Varid{l}\;\Varid{k}\comp \Varid{zero}}{\Varid{l}\;\Varid{k}\comp \succ }\mathrel{=}\alt{\succ }{\succ \comp \Varid{l}\;\Varid{k}}}
+    \ensuremath{\alt{\Varid{l}\;\Varid{k}\comp \Varid{zero}}{\Varid{l}\;\Varid{k}\comp \succ }\mathrel{=}\alt{\succ }{\succ \comp \p2\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}}}
 
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     \ensuremath{\Varid{f}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\conj{\Varid{l}\;\Varid{k}}{\Varid{f}\;\Varid{k}})}
   \more
-    \ensuremath{\Varid{l}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\succ }{\succ }\comp (\Varid{id}\mathbin{+}\Varid{lk})}
+    \ensuremath{\Varid{l}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\succ }{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}})}
 
 \just\equiv{Fokkinga}
-    \ensuremath{\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ }}}}
+    \ensuremath{\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}}
 
 \qed
 \end{eqnarray*}
 
-\subsubsection*{Dedução do <g,s> }
+\subsubsection*{Dedução de \ensuremath{\conj{\Varid{g}}{\Varid{s}}} }
 \begin{eqnarray*}
 \start
         \ensuremath{\begin{lcbr}\Varid{g}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{g}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\mathrm{1})\mathbin{*}\Varid{g}\;\Varid{d}\end{lcbr}}
+  \more
         \ensuremath{\begin{lcbr}\Varid{s}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{s}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{s}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
 
-\just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, s d = (d + 1)}
+\just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
         \ensuremath{\begin{lcbr}\Varid{g}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{g}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{s}}{\Varid{g}}\end{lcbr}}
-        \ensuremath{\begin{lcbr}\Varid{s}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{s}\comp \succ \mathrel{=}\succ \comp \Varid{s}\end{lcbr}}
+  \more
+        \ensuremath{\begin{lcbr}\Varid{s}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{s}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{g}}{\Varid{s}}\end{lcbr}}
 
 \just\equiv{ Eq -+ }
     \ensuremath{\alt{\Varid{g}\comp \Varid{zero}}{\Varid{g}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}\comp \conj{\Varid{s}}{\Varid{g}}}}
   \more
-    \ensuremath{\alt{\Varid{s}\comp \Varid{zero}}{\Varid{s}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\succ \comp \Varid{s}}}
+    \ensuremath{\alt{\Varid{s}\comp \Varid{zero}}{\Varid{s}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\succ \comp \p2\comp \conj{\Varid{g}}{\Varid{s}}}}
 
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     \ensuremath{\Varid{g}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\conj{\Varid{s}}{\Varid{g}})}
   \more
-    \ensuremath{\Varid{l}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\succ }\comp (\Varid{id}\mathbin{+}\Varid{s})}
+    \ensuremath{\Varid{s}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\conj{\Varid{g}}{\Varid{s}})}
 
 \just\equiv{Fokkinga}
-    \ensuremath{\conj{\Varid{g}}{\Varid{s}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ }}}}
+    \ensuremath{\conj{\Varid{g}}{\Varid{s}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}}}
 
 \qed
 \end{eqnarray*}
 
-Após a dedução de <fk,lk> e <g,s>, vamos combinar os resultados utilizando a lei da banana-split:
+Após a dedução de \begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\conj{\Varid{fk}}{\Varid{lk}}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+ e \begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\conj{\Varid{g}}{\Varid{s}}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+, vamos combinar os resultados utilizando a lei da banana-split:
 
 \begin{eqnarray*}
 \start
-  \ensuremath{\conj{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ }}}}{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\Varid{suc}}}}}}
+  \ensuremath{\conj{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}}{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}}}}
 
 \just\equiv{Banana-Split}
   \more
-  \ensuremath{\cata{(\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ }}}}><\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\Varid{suc}}}\comp \conj{\Conid{F}\;\p1}{\Conid{F}\;\p2})}
+  \ensuremath{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}\times\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}\comp \conj{\Conid{F}\;\p1}{\Conid{F}\;\p2}}}
 
 \just\equiv{Absorção - x}
   \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ }}\comp (\Conid{F}\;\p1)}{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\Varid{suc}}}\comp (\Conid{F}\;\p2)}}}
+  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}\comp (\Conid{F}\;\p1)}{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}\comp (\Conid{F}\;\p2)}}}
 
 \just\equiv{Fusão - x}
   \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p1)}{\alt{\succ }{\succ }\comp (\Conid{F}\;\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p2)}{\alt{\Varid{one}}{\Varid{suc}}\comp (\Conid{F}\;\p2)}}}}
+  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p1)}{\alt{\succ }{\succ \comp \p2}\comp (\Conid{F}\;\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p2)}{\alt{\Varid{one}}{\succ \comp \p2}\comp (\Conid{F}\;\p2)}}}}
 
 \just\equiv{Def F f = id + f}
   \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}}{\cdot }}{\cdot }}}-\ensuremath{\mathbin{-}} p1)) ((either succ succ) . (id \ensuremath{\mathbin{-}}-\ensuremath{\p1)))\;\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}}{\cdot }}-\ensuremath{\mathbin{-}} p2)) ((either one suc) . (id \ensuremath{\mathbin{-}}-\ensuremath{\p2))))}
+  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\p1)}{\alt{\succ }{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\p2)}{\alt{\Varid{one}}{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\p2)}}}}
 
 \just\equiv{Absorção-+, Nat-id}
   \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p1)}{\alt{\succ }{\succ }\comp (\Conid{F}\;\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p2)}{\alt{\Varid{one}}{\Varid{suc}}\comp (\Conid{F}\;\p2)}}}}
+  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p1}}{\alt{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p2}}{\alt{\Varid{one}}{(\succ \comp \p2\comp \p2)}}}}}
+
+\just\equiv{Lei da Troca x 3}
+  \more
+  \ensuremath{\cata{\alt{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p1}}{\conj{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p2}}{\conj{\Varid{one}}{\Varid{suc}\comp \p2\comp \p2}}}}}
 
 \qed
 \end{eqnarray*}
 
+Assim, 
 
+\begin{eqnarray*}
+\start
 
+\just\equiv{ for b i = \ensuremath{\Varid{cata}\;\alt{\underline{\Varid{i}}}{\Varid{b}}} }
 
+\ensuremath{\Varid{cata}\;\alt{\underline{\Varid{base}}}{\Varid{loop}}\mathrel{=}\cata{\alt{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p1}}{\conj{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p2}}{\conj{\Varid{one}}{\Varid{suc}\comp \p2\comp \p2}}}}}
+
+\just\equiv{ Eq-+ }
+    const base = split (split one succ) (split one one)
+\more
+    loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))
+
+\qed
+\end{eqnarray*}
 
 
 \begin{hscode}\SaveRestoreHook
@@ -1720,7 +1753,7 @@ Após a dedução de <fk,lk> e <g,s>, vamos combinar os resultados utilizando a 
            \ar[r]_-{\ensuremath{\conj{\Varid{id}}{\underline{\mathrm{1}}}}}
 &
     \ensuremath{(\Varid{a},\underline{\mathrm{1}})}
-           \ar[d]_-{\ensuremath{\Varid{singl}}}
+           \ar[d]_{\ensuremath{\Varid{singl}}}
 \\
      \ensuremath{\mathit B\;[\mskip1.5mu (\Varid{a},\Conid{Int})\mskip1.5mu]}
 &
@@ -1850,7 +1883,7 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
            \ar[d]_-{\ensuremath{\cata{\Varid{g}}}}
 &
     \ensuremath{\mathrm{1}\mathbin{+}\N_0}
-           \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\cata{\Varid{g}}}}
+           \ar[d]^-{\ensuremath{\Varid{id}\mathbin{+}\cata{\Varid{g}}}}
            \ar[l]_-{\ensuremath{\mathsf{in}}}
 \\
      \ensuremath{\mathit B}
