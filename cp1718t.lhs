@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 \usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{palatino}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
@@ -1018,13 +1018,15 @@ getTransactions = either (p2.p2) (conc.((p2.p2) >< id))
 allTransactions = cataBlockchain getTransactions 
 
 \end{code}
-Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} recebida,que recebe uma função - \emph{getTransactions} - que tratará de concatenar as listas de transações de todos os Blocos da \emph{Blockchain}. No caso da \emph{Blockchain} ser um Bloco retormanos a sua lista de transações, que corresponde ao segundo operando do tuplo que o Bloco contém. Caso esta seja o tuplo \emph{(Block, Blockchain)} a lista de transações do Bloco será concatenada com o resultado da recursividade aplicado à \emph{Blockchain}. 
+Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} recebida, que recebe uma função - \emph{getTransactions} - que tratará de concatenar as listas de transações de todos os Blocos da \emph{Blockchain}. No caso da \emph{Blockchain} ser um bloco retormanos a sua lista de transações, que corresponde ao segundo operando do tuplo que o bloco contém. Caso esta seja o tuplo \emph{(Block, Blockchain)} a lista de transações do bloco será concatenada com o resultado da recursividade aplicado à block chain. 
 
 
 \subsubsection*{ledger}
 
-Para definir a função ledger foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
-Este catamorfismo recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emoh{collect} se encontram numa lista, situada no segundo operando do tuplo correspondente à sua entidade.
+
+Para definir a função \textbf{ledger} foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
+Utilizamos a \emph{allTransactions} de forma a ficarmos com uma lista de todas as transações de uma block chain, pois são estas que contêm a informação necessária para a construção de uma \emph{Ledger}.
+O catamorfismo utilizado recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente um map que percorrerá a lista de tuplos e irá aplicar a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emph{collect} se encontram numa lista situada no segundo operando do tuplo, deixando a entidade inalterada.
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1126,7 +1128,8 @@ Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} 
 \begin{code}
 h = split (p1.p2.p2) (split p1 (split (p2.p2.p2) (p1.p2)))    
 
-rotateQTree = cataQTree( inQTree.((id >< swap) -|- h) )
+rotateQTree = cataQTree( inQTree. g )
+          where g = (id >< swap) -|- h
 \end{code}
 
 
@@ -1134,7 +1137,8 @@ rotateQTree = cataQTree( inQTree.((id >< swap) -|- h) )
 Para redimensionar uma imagem, tal como o enunciado refere, apenas é necessário em cada \emph{Cell} multiplicar as linhas e colunas pelo fator passado à função. Assim, utilizamos um catamorfismo que, recursivamente, em cada \emph{Cell} da QTree irá multiplicar as suas linhas e colunas pelo fator dado e no caso de um \emph{Block} irá aplicar a identidade.
 
 \begin{code}
-scaleQTree i = cataQTree ( inQTree .((id >< ((*i) >< (*i))) -|- id) ) 
+scaleQTree i = cataQTree ( inQTree . g)
+          where g = (id >< ((*i) >< (*i))) -|- id 
 \end{code}
 
 
@@ -1169,14 +1173,13 @@ cor :: QTree a -> a
 cor (Cell a b c) = a
 cor (Block a b c d) = cor a
 
-
 outlineQTree = undefined
 
 \end{code}
 
 \subsection*{Problema 3}
 
-\subsubsection*{Dedução de |split fk lk| }
+Dedução de fk,lk 
 
 \begin{eqnarray*}
 \start
@@ -1184,110 +1187,94 @@ outlineQTree = undefined
     f k 0 = 1
   )(
     f k (d + 1) = (d + k  + 1) * f k d
-  )(
+  )|
+\more
+        |lcbr(
     l k 0 = k + 1
   )(
     l k (d + 1) = (l k d) + 1
   )|
-
-  \just\equiv{ Igualdade extensional |><| 2, Def-comp, l k d = (d + k  + 1)}
-
+\just\equiv{ Igualdade extensional |><| 2, Def-comp, l k d = |(d + k  + 1)|}
         |lcbr(
     f k . zero = one
   )(
     f k . succ = mul . split (f k) (l k)
-  )(
+  )|
+\more
+        |lcbr(
     l k . zero = succ
   )(
     l k . succ = succ . p2 . split (f k) (l k)
   )|
-
 \just\equiv{ Eq -+ }
     |either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
   \more
     |either (l k . zero) (l k . succ) = either succ (succ . p2 . split (f k) (l k))|
-
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     |f k . either (zero) (succ) = (either (one) (mul)) . (id + (split (l k) (f k)))|
-  \more
+\more
     |l k . either (zero) (succ) = (either (succ) (succ . p2)) . (id + split (f k) (l k))|
-
 \just\equiv{Fokkinga}
-    |split (f k) (l k) =|\cata{|split (either one mul) (either succ (succ . p2))|}
-
+    |split (f k) (l k) = cata(split (either one mul) (either succ (succ . p2)))|
 \qed
 \end{eqnarray*}
 
-\subsubsection*{Dedução de |split g s| }
+Dedução de g,s
 \begin{eqnarray*}
 \start
-        |lcbr(
+          |lcbr(
     g 0 = 1
   )(
     g (d + 1) = (d + 1) * g d
-  )(
+  )|
+\more
+          |lcbr(
     s 0 = 1
   )(
     s (d + 1) = (s d) + 1
   )|
-
-\just\equiv{ Igualdade extensional |><| 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
+\just\equiv{ Igualdade extensional >< 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
         |lcbr(
     g . zero = one
   )(
     g . succ = mul . split s g
-  )(
+  )|
+\more
+        |lcbr(
     s . zero = one
   )(
     s . succ = succ . p2 . split g s
   )|
-
 \just\equiv{ Eq -+ }
     |either (g . zero) (g . succ) = either one (mul . split s g)|
-  \more
+\more
     |either (s . zero) (s . succ) = either one (succ . p2 . split g s)|
-
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     |g . either (zero) (succ) = (either (one) (mul)) . (id + (split s g))|
-  \more
+\more
     |s . either (zero) (succ) = (either one (succ . p2)) . (id + split g s)|
-
 \just\equiv{Fokkinga}
-    |split g s =|\cata{|split (either one mul) (either one (succ . p2))|}
-
+    |split g s = cataNat (split (either one mul) (either one (succ . p2)))|
 \qed
 \end{eqnarray*}
 
-Após a dedução de \begin{code}split fk lk \end{code} e \begin{code} split g s \end{code}, vamos combinar os resultados utilizando a lei da banana-split:
+Após a dedução de fk,lk e g,s, vamos combinar os resultados utilizando a lei da banana-split:
 
 \begin{eqnarray*}
 \start
   |split (cataNat(split (either one mul) (either succ (succ . p2)))) (cataNat(split (either one mul) (either one (succ . p2))))|
-
 \just\equiv{Banana-Split}
-
   |cataNat( (split (either one mul) (either succ (succ . p2))) >< (split (either one mul) (either one (succ . p2))) . split (F p1) (F p2))|
-
 \just\equiv{Absorção - x}
-
   |cataNat(split ((split (either one mul) (either succ (succ . p2))) . (F p1)) ((split (either one mul) (either one (succ . p2))) . (F p2)))|
-
 \just\equiv{Fusão - x}
-
   |cataNat(split (split ((either one mul) . (F p1)) ((either succ (succ . p2)) . (F p1))) (split ((either one mul) . (F p2)) ((either one (succ . p2)) . (F p2))))|
-
 \just\equiv{Def F f = id + f}
-
   |cataNat(split (split ((either one mul) . (id + p1)) ((either succ (succ . p2)) . (id + p1))) (split ((either one mul) . (id + p2)) ((either one (succ . p2)) . (id + p2))))|
-
 \just\equiv{Absorção-+, Nat-id}
-
   |cataNat(split (split (either one (mul . p1)) (either succ (succ . p2 . p1)))  (split (either one (mul . p2)) (either one ((succ .  p2 . p2)))))|
-
 \just\equiv{Lei da Troca x 3}
-
   |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
-
 \qed
 \end{eqnarray*}
 
@@ -1295,29 +1282,21 @@ Assim,
 
 \begin{eqnarray*}
 \start
-
-\just\equiv{ for b i = |cata (either (const i) (b))| }
-
-|cata (either (const base) loop) = cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
-
+\just\equiv{ for b i = |cataNat(either (const i) (b))|}
+|cataNat(either base loop) = cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
 \just\equiv{ Eq-+ }
-    const base = split (split one succ) (split one one)
+    |base = split (split one succ) (split one one)|
 \more
-    loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))
-
+    |loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))|
 \qed
 \end{eqnarray*}
 
 
 \begin{code}
-  
- 
 base = f . (split a b)
       where a = split one succ
             b = split one one
             f ((a,b),(c,d)) = (a,b,c,d)
-
-
 loop = f . ( split a b ) . h
       where a = split (mul.p1) (succ.p2.p1)
             b = split (mul.p2) (succ.p2.p2)
@@ -1426,8 +1405,6 @@ muB = B. concat. (map muCounts). unB . (fmap unB)
            \ar[dl]_-{|D|}
 \\
     |D [(a,ProbRep)]| 
-&   
-
 }
 \end{eqnarray*}
 
