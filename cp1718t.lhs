@@ -1184,22 +1184,19 @@ outlineQTree = undefined
     f k 0 = 1
   )(
     f k (d + 1) = (d + k  + 1) * f k d
-  )|
-  \more
-        |lcbr(
+  )(
     l k 0 = k + 1
   )(
     l k (d + 1) = (l k d) + 1
   )|
 
   \just\equiv{ Igualdade extensional |><| 2, Def-comp, l k d = (d + k  + 1)}
+
         |lcbr(
     f k . zero = one
   )(
     f k . succ = mul . split (f k) (l k)
-  )|
-  \more
-        |lcbr(
+  )(
     l k . zero = succ
   )(
     l k . succ = succ . p2 . split (f k) (l k)
@@ -1228,9 +1225,7 @@ outlineQTree = undefined
     g 0 = 1
   )(
     g (d + 1) = (d + 1) * g d
-  )|
-  \more
-        |lcbr(
+  )(
     s 0 = 1
   )(
     s (d + 1) = (s d) + 1
@@ -1241,9 +1236,7 @@ outlineQTree = undefined
     g . zero = one
   )(
     g . succ = mul . split s g
-  )|
-  \more
-        |lcbr(
+  )(
     s . zero = one
   )(
     s . succ = succ . p2 . split g s
@@ -1272,27 +1265,27 @@ Após a dedução de \begin{code}split fk lk \end{code} e \begin{code} split g s
   |split (cataNat(split (either one mul) (either succ (succ . p2)))) (cataNat(split (either one mul) (either one (succ . p2))))|
 
 \just\equiv{Banana-Split}
-  \more
+
   |cataNat( (split (either one mul) (either succ (succ . p2))) >< (split (either one mul) (either one (succ . p2))) . split (F p1) (F p2))|
 
 \just\equiv{Absorção - x}
-  \more
+
   |cataNat(split ((split (either one mul) (either succ (succ . p2))) . (F p1)) ((split (either one mul) (either one (succ . p2))) . (F p2)))|
 
 \just\equiv{Fusão - x}
-  \more
+
   |cataNat(split (split ((either one mul) . (F p1)) ((either succ (succ . p2)) . (F p1))) (split ((either one mul) . (F p2)) ((either one (succ . p2)) . (F p2))))|
 
 \just\equiv{Def F f = id + f}
-  \more
+
   |cataNat(split (split ((either one mul) . (id + p1)) ((either succ (succ . p2)) . (id + p1))) (split ((either one mul) . (id + p2)) ((either one (succ . p2)) . (id + p2))))|
 
 \just\equiv{Absorção-+, Nat-id}
-  \more
+
   |cataNat(split (split (either one (mul . p1)) (either succ (succ . p2 . p1)))  (split (either one (mul . p2)) (either one ((succ .  p2 . p2)))))|
 
 \just\equiv{Lei da Troca x 3}
-  \more
+
   |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
 
 \qed
@@ -1305,7 +1298,7 @@ Assim,
 
 \just\equiv{ for b i = |cata (either (const i) (b))| }
 
-|cata (either (const base) loop) = |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
+|cata (either (const base) loop) = cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
 
 \just\equiv{ Eq-+ }
     const base = split (split one succ) (split one one)
