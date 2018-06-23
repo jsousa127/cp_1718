@@ -1176,7 +1176,7 @@ outlineQTree = undefined
 
 \subsection*{Problema 3}
 
-\subsubsection*{Dedução do \begin{code}split fk lk \end{code} }
+\subsubsection*{Dedução de |split fk lk| }
 
 \begin{eqnarray*}
 \start
@@ -1221,7 +1221,7 @@ outlineQTree = undefined
 \qed
 \end{eqnarray*}
 
-\subsubsection*{Dedução do \begin{code}split g s\end{code} }
+\subsubsection*{Dedução de |split g s| }
 \begin{eqnarray*}
 \start
         |lcbr(
@@ -1273,7 +1273,7 @@ Após a dedução de \begin{code}split fk lk \end{code} e \begin{code} split g s
 
 \just\equiv{Banana-Split}
   \more
-  |cataNat( (split (either one mul) (either succ (succ . p2))) |><| (split (either one mul) (either one (succ . p2))) . split (F p1) (F p2))|
+  |cataNat( (split (either one mul) (either succ (succ . p2))) >< (split (either one mul) (either one (succ . p2))) . split (F p1) (F p2))|
 
 \just\equiv{Absorção - x}
   \more
@@ -1374,7 +1374,7 @@ drawPTree = undefined
            \ar[r]_-{|split (id) (const 1)|}
 &
     |(a,const 1)|
-           \ar[d]_-{|singl|}
+           \ar[d]_{|singl|}
 \\
      |B [(a,Int)]|
 &
