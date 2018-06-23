@@ -1176,7 +1176,7 @@ outlineQTree = undefined
 
 \subsection*{Problema 3}
 
-\subsubsection*{Dedução do <fk,lk> }
+\subsubsection*{Dedução do \begin{code}split fk lk \end{code} }
 
 \begin{eqnarray*}
 \start
@@ -1200,26 +1200,26 @@ outlineQTree = undefined
         |lcbr(
     l k . zero = succ
   )(
-    l k . succ = succ . l k
+    l k . succ = succ . p2 . split (f k) (l k)
   )|
 
 \just\equiv{ Eq -+ }
     |either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
   \more
-    |either (l k . zero) (l k . succ) = either succ (succ . l k)|
+    |either (l k . zero) (l k . succ) = either succ (succ . p2 . split (f k) (l k))|
 
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     |f k . either (zero) (succ) = (either (one) (mul)) . (id + (split (l k) (f k)))|
   \more
-    |l k . either (zero) (succ) = (either (succ) (succ)) . (id + lk)|
+    |l k . either (zero) (succ) = (either (succ) (succ . p2)) . (id + split (f k) (l k))|
 
 \just\equiv{Fokkinga}
-    |split (f k) (l k) =|\cata{|split (either one mul) (either succ succ)|}
+    |split (f k) (l k) =|\cata{|split (either one mul) (either succ (succ . p2))|}
 
 \qed
 \end{eqnarray*}
 
-\subsubsection*{Dedução do <g,s> }
+\subsubsection*{Dedução do \begin{code}split g s\end{code} }
 \begin{eqnarray*}
 \start
         |lcbr(
@@ -1233,7 +1233,7 @@ outlineQTree = undefined
     s (d + 1) = (s d) + 1
   )|
 
-\just\equiv{ Igualdade extensional |><| 2, Def-comp, s d = (d + 1)}
+\just\equiv{ Igualdade extensional |><| 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
         |lcbr(
     g . zero = one
   )(
@@ -1242,57 +1242,74 @@ outlineQTree = undefined
         |lcbr(
     s . zero = one
   )(
-    s . succ = succ . s
+    s . succ = succ . p2 . split g s
   )|
 
 \just\equiv{ Eq -+ }
     |either (g . zero) (g . succ) = either one (mul . split s g)|
   \more
-    |either (s . zero) (s . succ) = either one (succ . s)|
+    |either (s . zero) (s . succ) = either one (succ . p2 . split g s)|
 
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     |g . either (zero) (succ) = (either (one) (mul)) . (id + (split s g))|
   \more
-    |l k . either (zero) (succ) = (either one (succ)) . (id + s)|
+    |s . either (zero) (succ) = (either one (succ . p2)) . (id + split g s)|
 
 \just\equiv{Fokkinga}
-    |split g s =|\cata{|split (either one mul) (either one succ)|}
+    |split g s =|\cata{|split (either one mul) (either one (succ . p2))|}
 
 \qed
 \end{eqnarray*}
 
-Após a dedução de <fk,lk> e <g,s>, vamos combinar os resultados utilizando a lei da banana-split:
+Após a dedução de \begin{code}split fk lk \end{code} e \begin{code} split g s \end{code}, vamos combinar os resultados utilizando a lei da banana-split:
 
 \begin{eqnarray*}
 \start
-  |split (cataNat(split (either one mul) (either succ succ))) (cataNat(split (either one mul) (either one suc)))|
+  |split (cataNat(split (either one mul) (either succ (succ . p2)))) (cataNat(split (either one mul) (either one (succ . p2))))|
 
 \just\equiv{Banana-Split}
   \more
-  |cataNat( (split (either one mul) (either succ succ)) |><| (split (either one mul) (either one suc)) . split (F p1) (F p2))|
+  |cataNat( (split (either one mul) (either succ (succ . p2))) |><| (split (either one mul) (either one (succ . p2))) . split (F p1) (F p2))|
 
 \just\equiv{Absorção - x}
   \more
-  |cataNat(split ((split (either one mul) (either succ succ)) . (F p1)) ((split (either one mul) (either one suc)) . (F p2)))|
+  |cataNat(split ((split (either one mul) (either succ (succ . p2))) . (F p1)) ((split (either one mul) (either one (succ . p2))) . (F p2)))|
 
 \just\equiv{Fusão - x}
   \more
-  |cataNat(split (split ((either one mul) . (F p1)) ((either succ succ) . (F p1))) (split ((either one mul) . (F p2)) ((either one suc) . (F p2))))|
+  |cataNat(split (split ((either one mul) . (F p1)) ((either succ (succ . p2)) . (F p1))) (split ((either one mul) . (F p2)) ((either one (succ . p2)) . (F p2))))|
 
 \just\equiv{Def F f = id + f}
   \more
-  |cataNat(split (split ((either one mul) . (id |-|-| p1)) ((either succ succ) . (id |-|-| p1))) (split ((either one mul) . (id |-|-| p2)) ((either one suc) . (id |-|-| p2))))|
+  |cataNat(split (split ((either one mul) . (id + p1)) ((either succ (succ . p2)) . (id + p1))) (split ((either one mul) . (id + p2)) ((either one (succ . p2)) . (id + p2))))|
 
 \just\equiv{Absorção-+, Nat-id}
   \more
-  |cataNat(split (split ((either one mul) . (F p1)) ((either succ succ) . (F p1))) (split ((either one mul) . (F p2)) ((either one suc) . (F p2))))|
+  |cataNat(split (split (either one (mul . p1)) (either succ (succ . p2 . p1)))  (split (either one (mul . p2)) (either one ((succ .  p2 . p2)))))|
+
+\just\equiv{Lei da Troca x 3}
+  \more
+  |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
 
 \qed
 \end{eqnarray*}
 
+Assim, 
 
+\begin{eqnarray*}
+\start
 
+\just\equiv{ for b i = |cata (either (const i) (b))| }
 
+|cata (either (const base) loop) = |cataNat(either (split (split one (mul . p1)) (split succ (succ . p2 . p1)))  (split (split one (mul . p2)) (split one (suc . p2 . p2))))|
+
+\just\equiv{ Eq-+ }
+    const base = split (split one succ) (split one one)
+\more
+    loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))
+
+\qed
+\end{eqnarray*}
 
 
 \begin{code}
