@@ -1494,7 +1494,7 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
            \ar[d]_-{|cataNat g|}
 &
     |1 + Nat0|
-           \ar[d]^{|id + (cataNat g)|}
+           \ar[d]^-{|id + (cataNat g)|}
            \ar[l]_-{|inNat|}
 \\
      |B|
