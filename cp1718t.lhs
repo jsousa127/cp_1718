@@ -1185,6 +1185,7 @@ outlineQTree = undefined
   )(
     f k (d + 1) = (d + k  + 1) * f k d
   )|
+  \more
         |lcbr(
     l k 0 = k + 1
   )(
@@ -1197,6 +1198,7 @@ outlineQTree = undefined
   )(
     f k . succ = mul . split (f k) (l k)
   )|
+  \more
         |lcbr(
     l k . zero = succ
   )(
@@ -1227,6 +1229,7 @@ outlineQTree = undefined
   )(
     g (d + 1) = (d + 1) * g d
   )|
+  \more
         |lcbr(
     s 0 = 1
   )(
@@ -1239,6 +1242,7 @@ outlineQTree = undefined
   )(
     g . succ = mul . split s g
   )|
+  \more
         |lcbr(
     s . zero = one
   )(
