@@ -994,6 +994,22 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
 Cada bloco contém uma lista de transações. Para o desenvolvimento da função \emph{allTransactions} é necessário retirar de cada um destes a respetiva lista de transações, e por fim, juntar todas estas listas de forma a obtermos o resultado desejado.
 
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]_-{|allTransactions|}
+           \ar[r]_-{|outBlockchain|}
+&
+    |Block + (Block >< Blockchain)|
+           \ar[d]^-{|id+id >< |\cata{(getTransactions)}}
+\\
+     |Transactions|
+&
+     |Block + (Block >< Transactions)|
+           \ar[l]^-{|getTransactions|}
+}
+\end{eqnarray*}
+
 \begin{code}
 
 getTransactions :: Either Block (Block, Transactions)  -> Transactions
@@ -1009,6 +1025,22 @@ Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} receb
 
 Para definir a função ledger foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
 Este catamorfismo recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emoh{collect} se encontram numa lista, situada no segundo operando do tuplo correspondente à sua entidade.
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]_-{|ledger|}
+           \ar[r]_-{|allTransactions|}
+&
+    |Block + (Block >< Blockchain)|
+           \ar[d]^-{\cata{(getLedger)}}
+\\
+     |Ledger|
+&
+     |Ledger|
+           \ar[l]^-{|acc|}
+}
+\end{eqnarray*}
 
 \begin{code}
 
@@ -1039,11 +1071,26 @@ Após obtermos a lista com todos os MagicNr de uma \emph{Blockchain} é necessá
 \begin{code}
 rep :: [MagicNo] -> Bool
 rep = uncurry (==) . (split id nub)
-
-
-isValidMagicNr = rep.(cataBlockchain getMagicNr)
 \end{code}
 
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]_-{|isValidMagicNr|}
+           \ar[r]^-{\cata{(getMagicNr)}}
+&
+    |[MagicNo]|
+           \ar[dl]^-{|rep|}
+\\
+     |Bool|
+&
+}
+\end{eqnarray*}
+
+
+\begin{code}
+isValidMagicNr = rep.(cataBlockchain getMagicNr)
+\end{code}
 
 \subsection*{Problema 2}
 
@@ -1129,6 +1176,8 @@ outlineQTree = undefined
 
 \subsection*{Problema 3}
 
+\subsubsection*{Dedução do <fk,lk> }
+
 \begin{eqnarray*}
 \start
         |lcbr(
@@ -1142,8 +1191,19 @@ outlineQTree = undefined
     l k (d + 1) = (l k d) + 1
   )|
 
+  \just\equiv{ Igualdade extensional |><| 2, Def-comp, l k d = (d + k  + 1)}
+        |lcbr(
+    f k . zero = one
+  )(
+    f k . succ = mul . split (f k) (l k)
+  )|
+        |lcbr(
+    l k . zero = succ
+  )(
+    l k . succ = succ . l k
+  )|
+
 \just\equiv{ Eq -+ }
-\start
     |either (f k . zero) (f k . succ) = either one (mul.split (l k) (f k))|
   \more
     |either (l k . zero) (l k . succ) = either succ (succ . l k)|
@@ -1154,10 +1214,86 @@ outlineQTree = undefined
     |l k . either (zero) (succ) = (either (succ) (succ)) . (id + lk)|
 
 \just\equiv{Fokkinga}
-    |split (f k) (l k) =|\cata|split (either one mul) (either succ succ)|
+    |split (f k) (l k) =|\cata{|split (either one mul) (either succ succ)|}
 
-\end{qed}
+\qed
 \end{eqnarray*}
+
+\subsubsection*{Dedução do <g,s> }
+\begin{eqnarray*}
+\start
+        |lcbr(
+    g 0 = 1
+  )(
+    g (d + 1) = (d + 1) * g d
+  )|
+        |lcbr(
+    s 0 = 1
+  )(
+    s (d + 1) = (s d) + 1
+  )|
+
+\just\equiv{ Igualdade extensional |><| 2, Def-comp, s d = (d + 1)}
+        |lcbr(
+    g . zero = one
+  )(
+    g . succ = mul . split s g
+  )|
+        |lcbr(
+    s . zero = one
+  )(
+    s . succ = succ . s
+  )|
+
+\just\equiv{ Eq -+ }
+    |either (g . zero) (g . succ) = either one (mul . split s g)|
+  \more
+    |either (s . zero) (s . succ) = either one (succ . s)|
+
+\just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
+    |g . either (zero) (succ) = (either (one) (mul)) . (id + (split s g))|
+  \more
+    |l k . either (zero) (succ) = (either one (succ)) . (id + s)|
+
+\just\equiv{Fokkinga}
+    |split g s =|\cata{|split (either one mul) (either one succ)|}
+
+\qed
+\end{eqnarray*}
+
+Após a dedução de <fk,lk> e <g,s>, vamos combinar os resultados utilizando a lei da banana-split:
+
+\begin{eqnarray*}
+\start
+  |split (cataNat(split (either one mul) (either succ succ))) (cataNat(split (either one mul) (either one suc)))|
+
+\just\equiv{Banana-Split}
+  \more
+  |cataNat( (split (either one mul) (either succ succ)) |><| (split (either one mul) (either one suc)) . split (F p1) (F p2))|
+
+\just\equiv{Absorção - x}
+  \more
+  |cataNat(split ((split (either one mul) (either succ succ)) . (F p1)) ((split (either one mul) (either one suc)) . (F p2)))|
+
+\just\equiv{Fusão - x}
+  \more
+  |cataNat(split (split ((either one mul) . (F p1)) ((either succ succ) . (F p1))) (split ((either one mul) . (F p2)) ((either one suc) . (F p2))))|
+
+\just\equiv{Def F f = id + f}
+  \more
+  |cataNat(split (split ((either one mul) . (id |-|-| p1)) ((either succ succ) . (id |-|-| p1))) (split ((either one mul) . (id |-|-| p2)) ((either one suc) . (id |-|-| p2))))|
+
+\just\equiv{Absorção-+, Nat-id}
+  \more
+  |cataNat(split (split ((either one mul) . (F p1)) ((either succ succ) . (F p1))) (split ((either one mul) . (F p2)) ((either one suc) . (F p2))))|
+
+\qed
+\end{eqnarray*}
+
+
+
+
+
 
 \begin{code}
   
@@ -1245,7 +1381,7 @@ singletonbag = B . singl . (split (id) (const 1))
            \ar[r]_-{|unB|}
 &   
     | [([(a,Int)],Int)] |
-            \ar[d]_-{|map muCounts|}          
+            \ar[d]-{|map muCounts|}          
 \\
     |B [(a,Int)]|
 &
@@ -1263,28 +1399,21 @@ muB = B. concat. (map muCounts). unB . (fmap unB)
 
 \end{code}
 
-\subsubsection*{muB}
+\subsubsection*{dist}
 
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |B [(B [(a,Int)],Int)]|
-           \ar[d]_-{|muB|}
-           \ar[r]_-{|fmap unB|}
-&
-    |B [([(a,Int)],Int)]|
-           \ar[r]_-{|unB|}
-&   
-    | [([(a,Int)],Int)] |
-            \ar[d]_-{|map muCounts|}          
-\\
     |B [(a,Int)]|
-&
-     |[(a,Int)]|
-           \ar[l]^-{|B|}
-&
-|     [[(a,Int)]]|
-            \ar[l]_-{|concat|}
+           \ar[d]_-{|dist|}
+           \ar[r]_-{|genDist|}
+ &
+    |[(a,ProbRep)]|
+           \ar[dl]_-{|D|}
+\\
+    |D [(a,ProbRep)]| 
+&   
+
 }
 \end{eqnarray*}
 
