@@ -1380,8 +1380,8 @@ singletonbag = B . singl . (split (id) (const 1))
     |B [([(a,Int)],Int)]|
            \ar[r]_-{|unB|}
 &   
-    | [([(a,Int)],Int)] |
-            \ar[d]-{|map muCounts|}          
+    |[([(a,Int)],Int)]|
+            \ar[d]^-{|map muCounts|}          
 \\
     |B [(a,Int)]|
 &
