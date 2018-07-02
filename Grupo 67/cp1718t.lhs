@@ -1145,7 +1145,7 @@ Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} 
 \begin{code}
 h = split (p1.p2.p2) (split p1 (split (p2.p2.p2) (p1.p2)))    
 
-rotateQTree = cataQTree( inQTree. g )
+rotateQTree = cataQTree( inQTree . g )
           where g = (id >< swap) -|- h
 \end{code}
 

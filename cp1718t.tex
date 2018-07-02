@@ -1361,7 +1361,9 @@ Assim, foi utilizado um catamorfismo para percorrermos a \emph{Blockchain} receb
 
 
 Para definir a função \textbf{ledger} foi utilizado um catamorfismo que será aplicado após a função definida anteriormente (\emph{allTransactions}).
+
 Utilizamos a \emph{allTransactions} de forma a ficarmos com uma lista de todas as transações de uma block chain, pois são estas que contêm a informação necessária para a construção de uma \emph{Ledger}.
+
 O catamorfismo utilizado recebe um gene - \emph{getLedger} - que irá percorrer todas as transações e criar uma lista de tuplos (\emph{Entity}, \emph{Value}) correspondente ao saldo de cada entidade após uma transação. Porém esta lista de tuplos contém entidades repetidas, o que faz com que esse não seja o resultado desejado pois não permite saber diretamente qual o saldo de uma entidade. Assim, após o catamorfismo aplicamos a função \emph{collect}, de forma a eliminarmos a repetição das entidades, e posteriormente um map que percorrerá a lista de tuplos e irá aplicar a \emph{sum} de forma a somar todos os \emph{values} de uma entidade, que após a aplicação da \emph{collect} se encontram numa lista situada no segundo operando do tuplo, deixando a entidade inalterada.
 
 \begin{eqnarray*}
@@ -1370,12 +1372,12 @@ O catamorfismo utilizado recebe um gene - \emph{getLedger} - que irá percorrer 
            \ar[d]_-{\ensuremath{\Varid{ledger}}}
            \ar[r]_-{\ensuremath{\Varid{allTransactions}}}
 &
-    \ensuremath{\Conid{Block}\mathbin{+}(\Conid{Block}\times\Conid{Blockchain})}
+    \ensuremath{(\Conid{E}\times(\Conid{V}\times\Conid{E}))\times\Conid{T}\mathbin{*}}
            \ar[d]^-{\cata{(getLedger)}}
 \\
-     \ensuremath{\Conid{Ledger}}
+     \ensuremath{(\Conid{E}\times\Conid{V})\times\Conid{T}\mathbin{*}}
 &
-     \ensuremath{\Conid{Ledger}}
+    \ensuremath{(\Conid{E}\times\Conid{V})\times\Conid{T}\mathbin{*}}
            \ar[l]^-{\ensuremath{\Varid{acc}}}
 }
 \end{eqnarray*}
@@ -1401,13 +1403,12 @@ O catamorfismo utilizado recebe um gene - \emph{getLedger} - que irá percorrer 
 \subsubsection*{isValidMagicNr}
 
 De forma a verificarmos se todos os MagicNr são válidos, isto é, são únicos, primeiro foi necessário obtermos uma lista com todos os MagicNr dos blocos, a fim de posteriormente vermos se extistem repetidos.
+
 Assim, numa primeira fase começamos por aplicar um catamorfismo, cujo gene que este recebe, \emph{getMagicNr}, no caso de a Blackchain ser apenas um bloco irá criar uma lista apenas com um MagicNr, e no caso de ser o tuplo (\emph{Block}, \emph{Blockchain}) irá juntar o MagicNr do bloco com a lista de MagicNr resultante da recursividade.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{getMagicNr}\mathbin{::}\Conid{Block}+(\Conid{Block},[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu])\to [\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]{}\<[E]%
-\\
 \>[B]{}\Varid{getMagicNr}\mathrel{=}\alt{\Varid{singl}\comp (\Varid{id}\comp \p1)}{\Varid{cons}\comp (\p1\times\Varid{id})}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
@@ -1417,8 +1418,6 @@ Após obtermos a lista com todos os MagicNr de uma \emph{Blockchain} é necessá
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{rep}\mathbin{::}[\mskip1.5mu \Conid{MagicNo}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
-\\
 \>[B]{}\Varid{rep}\mathrel{=}\uncurry{(\equiv )}\comp \conj{\Varid{id}}{\Varid{nub}}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
@@ -1479,7 +1478,23 @@ Após obtermos a lista com todos os MagicNr de uma \emph{Blockchain} é necessá
 \end{hscode}\resethooks
 
 \subsubsection*{rotateQTree}
-Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} como também cada ramo da árvore. Para isso utilizamos um catamorfismo cujo gene que este recebe irá trocar as linhas com as colunas no caso de uma \emph{Cell} e no caso de um \emph{Block} vai trocar a ordem das QTrees, e isto será aplicado recursivamente a toda a QTree.
+Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} como também cada ramo da árvore. Para isso utilizamos um catamorfismo cujo gene que este recebe irá trocar as linhas com as colunas no caso de uma \emph{Cell} e no caso de um \emph{Block} vai trocar a ordem das quad trees, e isto será aplicado recursivamente a toda a quad tree.
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}}
+           \ar[d]_-{\ensuremath{\Varid{rotaQTree}}}
+&
+    \ensuremath{\Conid{A}\mathbin{+}\Conid{QTree}\mathbin{\uparrow}\mathrm{4}}
+          \ar[d]^-{\ensuremath{\Varid{id}\mathbin{+}} \cata{in.(g+h)}}
+          \ar[l]^-{inQTree}
+\\
+    \ensuremath{\Conid{QTree}}
+&
+    \ensuremath{\Conid{A}\mathbin{+}\Conid{QTree}\mathbin{\uparrow}\mathrm{4}}
+          \ar[l]^-{in . f}     
+}
+\end{eqnarray*}
 
 
 \begin{hscode}\SaveRestoreHook
@@ -1499,6 +1514,24 @@ Para rodarmos uma QTree 90 graus é necessário não só rodar cada \emph{Cell} 
 \subsubsection*{scaleQTree}
 Para redimensionar uma imagem, tal como o enunciado refere, apenas é necessário em cada \emph{Cell} multiplicar as linhas e colunas pelo fator passado à função. Assim, utilizamos um catamorfismo que, recursivamente, em cada \emph{Cell} da QTree irá multiplicar as suas linhas e colunas pelo fator dado e no caso de um \emph{Block} irá aplicar a identidade.
 
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}}
+           \ar[d]_-{\ensuremath{\Varid{scaleQTree}}}
+&
+    \ensuremath{\Conid{A}\mathbin{+}\Conid{QTree}\mathbin{\uparrow}\mathrm{4}}
+          \ar[d]^-{\ensuremath{\Varid{id}\mathbin{+}} \cata{inQTree . g}}
+          \ar[l]^-{inQTree}
+\\
+    \ensuremath{\Conid{QTree}}
+&
+    \ensuremath{\Conid{A}\mathbin{+}\Conid{QTree}\mathbin{\uparrow}\mathrm{4}}
+          \ar[l]^-{in . g}     
+}
+\end{eqnarray*}
+
+
+
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{11}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1514,7 +1547,25 @@ Para redimensionar uma imagem, tal como o enunciado refere, apenas é necessári
 \subsubsection*{invertQTree}
 
 Inverter as cores de uma QTree significa subtrair a 255 cada componente de cor RGB. Podemos verificar que é apenas nas \emph{Cell} que temos a componente cor, e, assim sendo, é apenas a estas que queremos efetuar alterações.
+
 Posto isto, recorremos à utilização do fmap, pois este apenas aplica uma função às folhas da àrvore. Este recebe a função auxiliar \textbf{inverteCor} que irá subtrair as primeiras três componentes do \textbf{PixelRGBA8} a 255, permanecendo inalterada a última componente deste.
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}}
+           \ar[d]_-{\ensuremath{\Varid{invertQTree}}}
+&
+    \ensuremath{\Conid{F}\;\Conid{QTree}}
+           \ar[l]_-{\ensuremath{\Varid{inQTree}}}
+           \ar[d]^-{\ensuremath{\Conid{F}\;\Varid{inverteCor}}}
+\\
+    \ensuremath{\Conid{QTree}}
+          \ar[r]_-{\ensuremath{\Varid{outQTree}}}
+&
+    \ensuremath{\Conid{F}\;\Conid{QTree}}
+}
+\end{eqnarray*}
+
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1530,12 +1581,13 @@ Posto isto, recorremos à utilização do fmap, pois este apenas aplica uma fun�
 \subsubsection*{compressQTree}
 
 Comprimir uma QTree significa cortar as folhas da árvore para reduzir a sua profundidade. A quadtree comprimida tem profundidade igual à da quadtree original menos a taxa de compressão, ou seja, no caso de ao cortar a árvore num nível que contém \emph{Block}, este terá que ser substituído por uma nova \emph{Cell} que terá que representar as partes que serão removidas da árvore.
+
 Por exemplo, a nova \emph{Cell} que irá substituir um \emph{Block} tem que representar todas as \emph{QTree} que iriam estar neste \emph{Block}, e para isso, será necessário somar as linhas e colunas de todas as \emph{Cells}. Para obter estas somas referidas, recorremos à sizeQTree que nos retorna um tuplo com o tamanho de uma quadtree, e será o resultado desta que é utilizado para a criação da \emph{Cell} substituta.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{28}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{compressQTree}\;\Varid{n}\;\Varid{t}\mathrel{=}\Varid{pruneAux}\;((\Varid{depthQTree}\;\Varid{t})\mathbin{-}(\Varid{n}\mathbin{-}\mathrm{1}))\;\Varid{t}{}\<[E]%
 \\[\blanklineskip]%
@@ -1543,13 +1595,16 @@ Por exemplo, a nova \emph{Cell} que irá substituir um \emph{Block} tem que repr
 \\
 \>[B]{}\Varid{pruneAux}\;\Varid{n}\;(\Conid{Cell}\;\Varid{a}\;\Varid{x}\;\Varid{y})\mathrel{=}(\Conid{Cell}\;\Varid{a}\;\Varid{x}\;\Varid{y}){}\<[E]%
 \\
-\>[B]{}\Varid{pruneAux}\;\Varid{n}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mid \Varid{n}\leq \mathrm{1}\mathrel{=}\Conid{Cell}\;(\Varid{cor}\;\Varid{a})\;(\p1\;(\Varid{sizeQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})))\;(\p2\;(\Varid{sizeQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d}))){}\<[E]%
+\>[B]{}\Varid{pruneAux}\;\Varid{n}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d}){}\<[E]%
 \\
-\>[B]{}\hsindent{28}{}\<[28]%
-\>[28]{}\mid \Varid{otherwise}\mathrel{=}\Conid{Block}\;(\Varid{p}\;\Varid{a})\;(\Varid{p}\;\Varid{b})\;(\Varid{p}\;\Varid{c})\;(\Varid{p}\;\Varid{d}){}\<[E]%
+\>[B]{}\hsindent{15}{}\<[15]%
+\>[15]{}\mid \Varid{n}\leq \mathrm{1}\mathrel{=}\Conid{Cell}\;(\Varid{cor}\;\Varid{a})\;(\p1\;(\Varid{sizeQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})))\;(\p2\;(\Varid{sizeQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d}))){}\<[E]%
 \\
-\>[B]{}\hsindent{22}{}\<[22]%
-\>[22]{}\mathbf{where}\;\Varid{p}\mathrel{=}\Varid{pruneAux}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
+\>[B]{}\hsindent{15}{}\<[15]%
+\>[15]{}\mid \Varid{otherwise}\mathrel{=}\Conid{Block}\;(\Varid{p}\;\Varid{a})\;(\Varid{p}\;\Varid{b})\;(\Varid{p}\;\Varid{c})\;(\Varid{p}\;\Varid{d}){}\<[E]%
+\\
+\>[15]{}\hsindent{3}{}\<[18]%
+\>[18]{}\mathbf{where}\;\Varid{p}\mathrel{=}\Varid{pruneAux}\;(\Varid{n}\mathbin{-}\mathrm{1}){}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{cor}\mathbin{::}\Conid{QTree}\;\Varid{a}\to \Varid{a}{}\<[E]%
 \\
@@ -1563,44 +1618,27 @@ Por exemplo, a nova \emph{Cell} que irá substituir um \emph{Block} tem que repr
 
 \subsection*{Problema 3}
 
-<<<<<<< HEAD
 Dedução de fk,lk 
 
 \begin{eqnarray*}
 \start
-        \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{f}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\Varid{k}\mathbin{+}\mathrm{1})\times\Varid{f}\;\Varid{k}\;\Varid{d}\end{lcbr}}
-\more
-        \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\;\mathrm{0}\mathrel{=}\Varid{k}\mathbin{+}\mathrm{1}\\\Varid{l}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{l}\;\Varid{k}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
-\just\equiv{ }
-        \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{f}\;\Varid{k}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{f}}{\Varid{k}}\;\Varid{l}\;\Varid{k}\end{lcbr}}
-\more
-        \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\succ \\\Varid{l}\;\Varid{k}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\end{lcbr}}
-=======
-\subsubsection*{Dedução de \ensuremath{\conj{\Varid{fk}}{\Varid{lk}}} }
-
-\begin{eqnarray*}
-\start
         \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{f}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\Varid{k}\mathbin{+}\mathrm{1})\mathbin{*}\Varid{f}\;\Varid{k}\;\Varid{d}\end{lcbr}}
-  \more
+\more
         \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\;\mathrm{0}\mathrel{=}\Varid{k}\mathbin{+}\mathrm{1}\\\Varid{l}\;\Varid{k}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{l}\;\Varid{k}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
-
-  \just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, l k d = (d + k  + 1)}
+\just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, l k d = \ensuremath{(\Varid{d}\mathbin{+}\Varid{k}\mathbin{+}\mathrm{1})}}
         \ensuremath{\begin{lcbr}\Varid{f}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{f}\;\Varid{k}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\end{lcbr}}
-  \more
+\more
         \ensuremath{\begin{lcbr}\Varid{l}\;\Varid{k}\comp \Varid{zero}\mathrel{=}\succ \\\Varid{l}\;\Varid{k}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\end{lcbr}}
-
->>>>>>> c57cf7c2fa769a67aa98f76cfd23a44408f79c29
 \just\equiv{ Eq -+ }
     \ensuremath{\alt{\Varid{f}\;\Varid{k}\comp \Varid{zero}}{\Varid{f}\;\Varid{k}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}\comp \conj{\Varid{l}\;\Varid{k}}{\Varid{f}\;\Varid{k}}}}
   \more
     \ensuremath{\alt{\Varid{l}\;\Varid{k}\comp \Varid{zero}}{\Varid{l}\;\Varid{k}\comp \succ }\mathrel{=}\alt{\succ }{\succ \comp \p2\comp \conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}}}
-<<<<<<< HEAD
 \just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
     \ensuremath{\Varid{f}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\conj{\Varid{l}\;\Varid{k}}{\Varid{f}\;\Varid{k}})}
 \more
     \ensuremath{\Varid{l}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\succ }{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}})}
 \just\equiv{Fokkinga}
-    \ensuremath{\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\mathrel{=}\Varid{cata}\;\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}
+    \ensuremath{\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\mathrel{=}\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}}
 \qed
 \end{eqnarray*}
 
@@ -1610,7 +1648,7 @@ Dedução de g,s
           \ensuremath{\begin{lcbr}\Varid{g}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{g}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\mathrm{1})\mathbin{*}\Varid{g}\;\Varid{d}\end{lcbr}}
 \more
           \ensuremath{\begin{lcbr}\Varid{s}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{s}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{s}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
-\just\equiv{ Igualdade extensional >< 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
+\just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
         \ensuremath{\begin{lcbr}\Varid{g}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{g}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{s}}{\Varid{g}}\end{lcbr}}
 \more
         \ensuremath{\begin{lcbr}\Varid{s}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{s}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{g}}{\Varid{s}}\end{lcbr}}
@@ -1628,66 +1666,10 @@ Dedução de g,s
 \end{eqnarray*}
 
 Após a dedução de fk,lk e g,s, vamos combinar os resultados utilizando a lei da banana-split:
-=======
-
-\just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
-    \ensuremath{\Varid{f}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\conj{\Varid{l}\;\Varid{k}}{\Varid{f}\;\Varid{k}})}
-  \more
-    \ensuremath{\Varid{l}\;\Varid{k}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\succ }{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}})}
-
-\just\equiv{Fokkinga}
-    \ensuremath{\conj{\Varid{f}\;\Varid{k}}{\Varid{l}\;\Varid{k}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}}
-
-\qed
-\end{eqnarray*}
-
-\subsubsection*{Dedução de \ensuremath{\conj{\Varid{g}}{\Varid{s}}} }
-\begin{eqnarray*}
-\start
-        \ensuremath{\begin{lcbr}\Varid{g}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{g}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{d}\mathbin{+}\mathrm{1})\mathbin{*}\Varid{g}\;\Varid{d}\end{lcbr}}
-  \more
-        \ensuremath{\begin{lcbr}\Varid{s}\;\mathrm{0}\mathrel{=}\mathrm{1}\\\Varid{s}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}(\Varid{s}\;\Varid{d})\mathbin{+}\mathrm{1}\end{lcbr}}
-
-\just\equiv{ Igualdade extensional \ensuremath{\times} 2, Def-comp, s d = (d + 1), Cancelamento-x (no s)}
-        \ensuremath{\begin{lcbr}\Varid{g}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{g}\comp \succ \mathrel{=}\Varid{mul}\comp \conj{\Varid{s}}{\Varid{g}}\end{lcbr}}
-  \more
-        \ensuremath{\begin{lcbr}\Varid{s}\comp \Varid{zero}\mathrel{=}\Varid{one}\\\Varid{s}\comp \succ \mathrel{=}\succ \comp \p2\comp \conj{\Varid{g}}{\Varid{s}}\end{lcbr}}
-
-\just\equiv{ Eq -+ }
-    \ensuremath{\alt{\Varid{g}\comp \Varid{zero}}{\Varid{g}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}\comp \conj{\Varid{s}}{\Varid{g}}}}
-  \more
-    \ensuremath{\alt{\Varid{s}\comp \Varid{zero}}{\Varid{s}\comp \succ }\mathrel{=}\alt{\Varid{one}}{\succ \comp \p2\comp \conj{\Varid{g}}{\Varid{s}}}}
-
-\just\equiv{ Fusão -+ (esq), Absorção -+ (dir)}
-    \ensuremath{\Varid{g}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\conj{\Varid{s}}{\Varid{g}})}
-  \more
-    \ensuremath{\Varid{s}\comp \alt{\Varid{zero}}{\succ }\mathrel{=}\alt{\Varid{one}}{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\conj{\Varid{g}}{\Varid{s}})}
-
-\just\equiv{Fokkinga}
-    \ensuremath{\conj{\Varid{g}}{\Varid{s}}\mathrel{=}}\cata{\ensuremath{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}}}
-
-\qed
-\end{eqnarray*}
-
-Após a dedução de \begin{hscode}\SaveRestoreHook
-\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\conj{\Varid{fk}}{\Varid{lk}}{}\<[E]%
-\ColumnHook
-\end{hscode}\resethooks
- e \begin{hscode}\SaveRestoreHook
-\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\conj{\Varid{g}}{\Varid{s}}{}\<[E]%
-\ColumnHook
-\end{hscode}\resethooks
-, vamos combinar os resultados utilizando a lei da banana-split:
->>>>>>> c57cf7c2fa769a67aa98f76cfd23a44408f79c29
 
 \begin{eqnarray*}
 \start
   \ensuremath{\conj{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}}}{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}}}}
-<<<<<<< HEAD
 \just\equiv{Banana-Split}
   \ensuremath{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}\times\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}\comp \conj{\Conid{F}\;\p1}{\Conid{F}\;\p2}}}
 \just\equiv{Absorção - x}
@@ -1700,38 +1682,10 @@ Após a dedução de \begin{hscode}\SaveRestoreHook
   \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p1}}{\alt{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p2}}{\alt{\Varid{one}}{(\succ \comp \p2\comp \p2)}}}}}
 \just\equiv{Lei da Troca x 3}
   \ensuremath{\cata{\alt{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p1}}{\conj{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p2}}{\conj{\Varid{one}}{\Varid{suc}\comp \p2\comp \p2}}}}}
-=======
-
-\just\equiv{Banana-Split}
-  \more
-  \ensuremath{\cata{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}\times\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}\comp \conj{\Conid{F}\;\p1}{\Conid{F}\;\p2}}}
-
-\just\equiv{Absorção - x}
-  \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\succ }{\succ \comp \p2}}\comp (\Conid{F}\;\p1)}{\conj{\alt{\Varid{one}}{\Varid{mul}}}{\alt{\Varid{one}}{\succ \comp \p2}}\comp (\Conid{F}\;\p2)}}}
-
-\just\equiv{Fusão - x}
-  \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p1)}{\alt{\succ }{\succ \comp \p2}\comp (\Conid{F}\;\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Conid{F}\;\p2)}{\alt{\Varid{one}}{\succ \comp \p2}\comp (\Conid{F}\;\p2)}}}}
-
-\just\equiv{Def F f = id + f}
-  \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\p1)}{\alt{\succ }{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\p1)}}{\conj{\alt{\Varid{one}}{\Varid{mul}}\comp (\Varid{id}\mathbin{+}\p2)}{\alt{\Varid{one}}{\succ \comp \p2}\comp (\Varid{id}\mathbin{+}\p2)}}}}
-
-\just\equiv{Absorção-+, Nat-id}
-  \more
-  \ensuremath{\cata{\conj{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p1}}{\alt{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\alt{\Varid{one}}{\Varid{mul}\comp \p2}}{\alt{\Varid{one}}{(\succ \comp \p2\comp \p2)}}}}}
-
-\just\equiv{Lei da Troca x 3}
-  \more
-  \ensuremath{\cata{\alt{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p1}}{\conj{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p2}}{\conj{\Varid{one}}{\Varid{suc}\comp \p2\comp \p2}}}}}
-
->>>>>>> c57cf7c2fa769a67aa98f76cfd23a44408f79c29
 \qed
 \end{eqnarray*}
 
 Assim, 
-<<<<<<< HEAD
 
 \begin{eqnarray*}
 \start
@@ -1741,23 +1695,9 @@ Assim,
     \ensuremath{\Varid{base}\mathrel{=}\conj{\conj{\Varid{one}}{\succ }}{\conj{\Varid{one}}{\Varid{one}}}}
 \more
     \ensuremath{\Varid{loop}\mathrel{=}\conj{\conj{\Varid{mul}\comp \p1}{\succ \comp \p2\comp \p1}}{\conj{\Varid{mul}\comp \p2}{\succ \comp \p2\comp \p2}}}
-=======
-
-\begin{eqnarray*}
-\start
-
-\just\equiv{ for b i = \ensuremath{\Varid{cata}\;\alt{\underline{\Varid{i}}}{\Varid{b}}} }
-
-\ensuremath{\Varid{cata}\;\alt{\underline{\Varid{base}}}{\Varid{loop}}\mathrel{=}\cata{\alt{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p1}}{\conj{\succ }{\succ \comp \p2\comp \p1}}}{\conj{\conj{\Varid{one}}{\Varid{mul}\comp \p2}}{\conj{\Varid{one}}{\Varid{suc}\comp \p2\comp \p2}}}}}
-
-\just\equiv{ Eq-+ }
-    const base = split (split one succ) (split one one)
-\more
-    loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))
-
->>>>>>> c57cf7c2fa769a67aa98f76cfd23a44408f79c29
 \qed
 \end{eqnarray*}
+
 
 
 \begin{hscode}\SaveRestoreHook
@@ -1775,7 +1715,7 @@ Assim,
 \\
 \>[7]{}\hsindent{6}{}\<[13]%
 \>[13]{}\Varid{f}\;((\Varid{a},\Varid{b}),(\Varid{c},\Varid{d}))\mathrel{=}(\Varid{a},\Varid{b},\Varid{c},\Varid{d}){}\<[E]%
-\\
+\\[\blanklineskip]%
 \>[B]{}\Varid{loop}\mathrel{=}\Varid{f}\comp \conj{\Varid{a}}{\Varid{b}}\comp \Varid{h}{}\<[E]%
 \\
 \>[B]{}\hsindent{7}{}\<[7]%
@@ -1822,7 +1762,15 @@ Assim,
 \\
 \>[B]{}\hsindent{5}{}\<[5]%
 \>[5]{}\Varid{bimap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{cataFTree}\;(\Varid{inFTree}\comp (\Varid{baseFTree}\;\Varid{f}\;\Varid{g}\;\Varid{id})){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+Para gerar uma árvore de pitágoras é necessário ter atenção ao tamanho dos quadrados que serão desenhados. Assim, é aplicado um anamorfismo que recebe um gene que vai elevando a \ensuremath{\Varid{sqrt}\;(\mathrm{2})\mathbin{/}\mathrm{2})} ao sucessor da ordem de forma a que os quadrados vão diminuindo o seu tamanho ao serem gerados. 
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{generatePTree}\mathrel{=}\Varid{anaFTree}\;((\underline{\mathrm{1.0}}+\conj{((\Varid{sqrt}\;(\mathrm{2})\mathbin{/}\mathrm{2})\mathbin{\uparrow})\comp \succ }{\conj{\Varid{id}}{\Varid{id}}})\comp \Varid{outNat}){}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{drawPTree}\mathrel{=}\bot {}\<[E]%
@@ -1858,6 +1806,7 @@ Assim,
 
 \subsubsection*{muB}
 
+Esta função vai retirar todos os Bs de dentro do saco, de seguida tirar o saco e depois multiplicar todos os inteiros dos tuplos da lista pelo inteiro de fora.
 
 \begin{eqnarray*}
 \xymatrix@C=2cm{
@@ -1881,6 +1830,7 @@ Assim,
 }
 \end{eqnarray*}
 
+
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1890,6 +1840,9 @@ Assim,
 
 \subsubsection*{dist}
 
+Para defenirmos a função que irá calcular a distruibuição das cores num saco de berlindes primeiro tratamos de buscar a lista pertencente ao \emph{bag}, e para cada elemento dessa lista vamos calcular a rácio desse elemento, sendo essa o seu valor, segundo elemento do tuplo, a dividir pelo total.
+
+Após obtermos a lista com (a,ProbRep) apenas temos de aplicar a Distribuição a essa lista.
 
 \begin{eqnarray*}
 \xymatrix@C=2cm{
@@ -1911,7 +1864,6 @@ Assim,
 \ColumnHook
 \end{hscode}\resethooks
 
-\subsubsection{Auxiliares}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
